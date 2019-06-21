@@ -1,0 +1,241 @@
+AWSTemplateFormatVersion: 2010-09-09
+Metadata:
+  'AWS::CloudFormation::Designer': {}
+
+Parameters:
+
+  SourceBranchName:
+    Type: String
+    Default: master
+  CodeCommitRepoName:
+    Type: String
+    Default: mymind
+
+Outputs:
+  ArtifactsBucket:
+    Description: S3 bucket used for artifacts
+    Export:
+      Name: !Join
+      - '-'
+      - - !Ref 'AWS::StackName'
+        - !Ref 'AWS::Region'
+        - ArtifactsBucket
+    Value: !Ref ArtifactsBucket
+Resources:
+
+  # Pipeline bucket
+  PipelineBucket:
+    Type: AWS::S3::Bucket
+
+  ArtifactsBucket:
+    DeletionPolicy: Delete
+    Description: Creating Amazon S3 bucket for AWS CodePipeline and CodeBuild artifacts
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Join
+        - '-'
+        - - !Ref 'AWS::StackName'
+          - ArtifactsBucket
+      VersioningConfiguration:
+        Status: Enabled
+    Type: 'AWS::S3::Bucket'
+  CodeBuildProject:
+    Type: 'AWS::CodeBuild::Project'
+    DependsOn:
+    - CodeBuildPolicy
+    Properties:
+      BadgeEnabled: true
+      Description: !Join
+      - ''
+      - - 'CodeBuild Project for '
+        - !Ref 'AWS::StackName'
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: 'aws/codebuild/standard:1.0-1.8.0'
+        Type: LINUX_CONTAINER
+      Name: !Ref 'AWS::StackName'
+      ServiceRole: !Ref CodeBuildRole
+      Source:
+        Type: CODECOMMIT
+        Location: !Join
+        - ''
+        - - 'https://git-codecommit.'
+          - !Ref 'AWS::Region'
+          - .amazonaws.com/v1/repos/
+          - mymind
+      Cache:
+        Type: LOCAL
+        Modes:
+        - LOCAL_CUSTOM_CACHE
+      Artifacts:
+        Type: S3
+        EncryptionDisabled: true
+        Location: !Ref ArtifactsBucket
+        Name: mymind
+  CodeBuildPolicy:
+    Description: Setting IAM policy for service role for CodeBuild
+    Properties:
+      PolicyDocument:
+        Statement:
+        - Action:
+          - 'logs:CreateLogGroup'
+          - 'logs:CreateLogStream'
+          - 'logs:PutLogEvents'
+          Effect: Allow
+          Resource: '*'
+        - Action:
+          - 'codecommit:GitPull'
+          Effect: Allow
+          Resource:
+          - !Join
+            - ':'
+            - - 'arn'
+              - 'aws'
+              - 'codecommit'
+              - !Ref 'AWS::Region'
+              - !Ref 'AWS::AccountId'
+              - mymind
+        - Action:
+          - 's3:PutObject'
+          - 's3:GetObject'
+          - 's3:GetObjectVersion'
+          Effect: Allow
+          Resource:
+          - !Join
+            - ''
+            - - 'arn:aws:s3:::'
+              - !Ref ArtifactsBucket
+          - !Join
+            - ''
+            - - 'arn:aws:s3:::'
+              - !Ref ArtifactsBucket
+              - /*
+      PolicyName: !Join
+      - '-'
+      - - !Ref 'AWS::StackName'
+        - CodeBuildPolicy
+      Roles:
+      - !Ref CodeBuildRole
+    Type: 'AWS::IAM::Policy'
+  CodeBuildRole:
+    Description: Creating service role in IAM for AWS CodeBuild
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: 'sts:AssumeRole'
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+      Path: /
+      RoleName: !Join
+      - '-'
+      - - !Ref 'AWS::StackName'
+        - CodeBuild
+    Type: 'AWS::IAM::Role'
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+        Type: S3
+        Location: !Ref PipelineBucket
+      RestartExecutionOnUpdate: 'true'
+      RoleArn:
+        Fn::GetAtt:
+        - CodePipelineServiceRole
+        - Arn
+      Stages:
+      - Name: Source
+        Actions:
+        - Name: SourceAction
+          ActionTypeId:
+            Category: Source
+            Owner: AWS
+            Version: '1'
+            Provider: CodeCommit
+          OutputArtifacts:
+          - Name: SourceBundle
+          Configuration:
+            BranchName:
+              Ref: SourceBranchName
+            RepositoryName:
+              Ref: CodeCommitRepoName
+          RunOrder: '1'
+      - Name: Build
+        Actions:
+        - Name: CodeBuild
+          InputArtifacts:
+          - Name: SourceBundle
+          ActionTypeId:
+            Category: Build
+            Owner: AWS
+            Version: '1'
+            Provider: CodeBuild
+          OutputArtifacts:
+          - Name: buildArtifact
+          Configuration:
+            ProjectName: !Ref CodeBuildProject
+          RunOrder: '1'
+
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: ''
+          Effect: Allow
+          Principal:
+            Service:
+            - codepipeline.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: CodePipelinePolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Action:
+            - s3:GetObject
+            - s3:GetObjectVersion
+            - s3:GetBucketVersioning
+            Resource: "*"
+            Effect: Allow
+          - Action:
+            - s3:PutObject
+            Resource:
+            - arn:aws:s3:::codepipeline*
+            - arn:aws:s3:::elasticbeanstalk*
+            Effect: Allow
+          - Action:
+            - codecommit:GetBranch
+            - codecommit:GetCommit
+            - codecommit:UploadArchive
+            - codecommit:GetUploadArchiveStatus
+            - codecommit:CancelUploadArchive
+            Resource: !Join
+            - ':'
+            - - 'arn:aws:codecommit'
+              - !Ref 'AWS::Region'
+              - !Ref 'AWS::AccountId'
+              - 'mymind'
+            Effect: Allow
+          - Action:
+            - codebuild:*
+            Resource: "*"
+            Effect: Allow
+          - Action:
+            - autoscaling:*
+            - cloudwatch:*
+            - s3:*
+            - sns:*
+            - cloudformation:*
+            - sqs:*
+            - iam:PassRole
+            Resource: "*"
+            Effect: Allow
+          - Action:
+            - lambda:InvokeFunction
+            - lambda:ListFunctions
+            Resource: "*"
+            Effect: Allow

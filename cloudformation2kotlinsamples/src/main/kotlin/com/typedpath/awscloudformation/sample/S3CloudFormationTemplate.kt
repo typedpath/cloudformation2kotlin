@@ -5,6 +5,8 @@ import com.typedpath.awscloudformation.IamPolicy
 import com.typedpath.awscloudformation.schema.AWS_S3_Bucket
 import com.typedpath.awscloudformation.schema.AWS_S3_BucketPolicy
 import com.typedpath.awscloudformation.toYaml
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class S3CloudFormationTemplate : CloudFormationTemplate() {
 
@@ -15,6 +17,7 @@ class S3CloudFormationTemplate : CloudFormationTemplate() {
       indexDocument = "index.html"
       errorDocument = "error.html"
     }
+    this.bucketName = """maventesthost-${(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now()))}"""
   }
 
   val policyDocument = IamPolicy().apply {

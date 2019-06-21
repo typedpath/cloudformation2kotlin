@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  KeyName:
+    Description: existing key pair
+    Type: AWS::EC2::KeyPair::KeyName
+  KeyNameInput:
+    Description: enter a keyname
+    Default: leaseSomet
+    Type: String
+    MinLength: 1
+    MaxLength: 10
+    AllowedPattern: "[a-zA-Z]*"
+Resources:
+  EC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      SecurityGroups:
+      - !Ref InstanceSecurityGroup
+      KeyName: !Ref KeyName
+      ImageId: ami-035be7bafff33b6b6
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable ssh access via port 22
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0

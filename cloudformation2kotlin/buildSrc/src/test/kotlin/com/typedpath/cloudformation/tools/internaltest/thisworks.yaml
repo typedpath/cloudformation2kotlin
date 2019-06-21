@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: 2010-09-09
+Metadata:
+  'AWS::CloudFormation::Designer':
+    5b62adac-84b0-433b-81f3-d9c3e6738023:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 67
+        'y': 142
+      z: 0
+Resources:
+  s3HostingBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        ErrorDocument: error.html
+        IndexDocument: index.html
+  SampleBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref s3HostingBucket
+      PolicyDocument:
+        Statement:
+        - Action:
+          - 's3:GetObject'
+          Effect: Allow
+          Resource: !Join
+          - ''
+          - - 'arn:aws:s3:::'
+            - !Ref s3HostingBucket
+            - /*
+          Principal:
+            AWS:
+            - '*'
+          Condition:
+            StringLike:
+              'aws:Referer':
+              - 'http://www.example.com/*'
+              - 'http://example.com/*'

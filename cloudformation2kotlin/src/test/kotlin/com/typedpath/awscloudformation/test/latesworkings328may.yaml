@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  s3HostingBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: 'PublicRead'
+      WebsiteConfiguration:
+        ErrorDocument: 'error.html'
+        IndexDocument: 'index.html'
+  s3BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref s3HostingBucket
+      PolicyDocument:
+        Statement:
+        - Action:
+          - 's3:GetObject'
+          Effect: 'Allow'
+          Principal:
+            AWS:
+            - '*'
+          Resource:  !Join
+          - ''
+          - - 'arn:aws:s3:::'
+            - !Ref s3HostingBucket
+            - '/*'
+        Version: '2012-10-17'

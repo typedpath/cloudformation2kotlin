@@ -14,6 +14,10 @@ apply plugin: 'kotlin'
 apply plugin: 'idea'
 
 repositories {
+    maven {
+        //url 'https://maventesthost-20190618-091157.s3.amazonaws.com/repository'
+        url 'https://repositorybuckettest65-s3hostingbucket-qpezmj5xooak.s3.amazonaws.com/repository'
+    }
     mavenLocal()
     mavenCentral()
 }
