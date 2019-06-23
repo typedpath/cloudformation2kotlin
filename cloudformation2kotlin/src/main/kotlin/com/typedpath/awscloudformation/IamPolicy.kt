@@ -47,7 +47,7 @@ class IamPolicy() {
     enum class PrincipalType() {
         AWS, Federated, Service ;}
 
-    class PrincipalMapEntry(val Type:PrincipalType, val PrincipalIds: List<String>) {
+    class PrincipalMapEntry(val Type: PrincipalType, val PrincipalIds: List<String>) {
     }
 
     class ConditionMapEntry(val type: String, val values: List<ConditionValuePair>) {}

@@ -1,6 +1,6 @@
-package com.typedpath.awscloudformation
+package com.typedpath.awscloudformation.schema
 
-import com.typedpath.awscloudformation.schema.sample.AWS_CodePipeline_Pipeline
+import com.typedpath.awscloudformation.schema.AWS_CodePipeline_Pipeline
 
 //see https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-pipeline-structure.html#action-requirements
 

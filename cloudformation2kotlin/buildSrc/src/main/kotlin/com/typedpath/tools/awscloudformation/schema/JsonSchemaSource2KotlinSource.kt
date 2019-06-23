@@ -1,12 +1,16 @@
 package com.typedpath.tools.awscloudformation.schema
 
-import com.typedpath.awscloudformation.IamPolicy
-import com.typedpath.awscloudformation.PipelineStageActionConfiguration
 import jdk.nashorn.api.scripting.ScriptObjectMirror
 import java.util.*
 import java.util.Arrays.asList
 
+val IamPolicyQualifiedClassName = "com.typedpath.awscloudformation.IamPolicy"
+val PipelineStageActionConfigurationQualifiedClassName="com.typedpath.awscloudformation.schema.PipelineStageActionConfiguration"
+val ResourceQualifiedClassName = "com.typedpath.awscloudformation.Resource"
+
 fun jsonSchemaString2Kotlin(strJsonSchema: String, strPackage: String): Pair<String, String> {
+
+
   val jsonSchema: ScriptObjectMirror = stringToJson(strJsonSchema)
   val resourceTypeJson = jsonSchema["ResourceType"]
   if (resourceTypeJson == null || resourceTypeJson !is ScriptObjectMirror)
@@ -52,7 +56,7 @@ private fun propertySpec(
                 || "AWS::IAM::ManagedPolicy".equals(parentType) )
         &&*/ "policyDocument".equals(name) || "assumeRolePolicyDocument".equals(name)
   ) {
-    primitiveType = IamPolicy::class.qualifiedName
+    primitiveType = IamPolicyQualifiedClassName
   }
   if ("Timestamp".equals(primitiveType)) {
     primitiveType = Date::class.java.name
@@ -65,7 +69,7 @@ private fun propertySpec(
   }
   //TODO remove this
   if (parentType.endsWith("ActionDeclaration") && name.equals("configuration")) {
-    type = PipelineStageActionConfiguration::class.qualifiedName
+    type = PipelineStageActionConfigurationQualifiedClassName
     primitiveType = null
   }
 
@@ -147,7 +151,7 @@ class $className(${
     """
   val ${propertySpec(resourceName, it.name(), it.value)}"""
   }
-  })${if (isRoot) """: ${com.typedpath.awscloudformation.Resource::class.qualifiedName} () """ else ""} {
+  })${if (isRoot) """: ${ResourceQualifiedClassName} () """ else ""} {
   ${if (isRoot) "override" else ""} fun getResourceType() = "$resourceName"
   // Properties:${
   mutableProperties.joinToString("") {

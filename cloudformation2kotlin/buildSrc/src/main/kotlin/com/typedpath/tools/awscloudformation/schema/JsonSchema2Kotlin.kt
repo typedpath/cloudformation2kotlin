@@ -8,8 +8,6 @@ import java.util.stream.Collectors
 fun main(args: Array<String>) {
     val rootPath = "./buildSrc"
     val destinationRootPath = "./generated/source/kotlin"
-    //println(rootPath.toFile().absolutePath)
-    //fun filter(f: File) = f.absoluteFile.toString().contains("S3BucketSpecification.json")
     val includes = asList("**/sample/S3BucketSpecification.json")
     transformDirectory(rootPath, includes, destinationRootPath, "com.typedpath.yy")
 }
@@ -55,17 +53,6 @@ fun transformDirectory(rootPath: Path, destinationRootPath: Path, strPackage: St
     jsonFiles.forEach{
         process(it, destinationRootPath, strPackage)
     }
-    //copy files
-    val srcRelativePath = Paths.get("com/typedpath/awscloudformation")
-    val rootMasterSrcPath: Path = Paths.get("./buildSrc/src/main/kotlin")
-    destinationRootPath.resolve(srcRelativePath).toFile().mkdirs()
-    //TODO use the whole directory
-    setOf("resource.kt", "IamPolicy.kt", "CloudFormationTemplate.kt",
-        "Serialization.kt", "PipelineStageActionConfiguration.kt").forEach {
-        val from = rootMasterSrcPath.resolve(srcRelativePath).resolve(it)
-        val to = destinationRootPath.resolve(srcRelativePath).resolve(it)
-        copy(from, to)
-    }
 }
 
 private fun copy(from: Path, to: Path) {
@@ -74,8 +61,6 @@ private fun copy(from: Path, to: Path) {
     var text = from.toFile().readText()
     //TODO work this out
     text= text.replace("com.typedpath.awscloudformation.schema.sample", "com.typedpath.awscloudformation.schema")
-    //println("copying ******** $text")
-    //from.toFile().copyTo(to.toFile(), true)
     to.toFile().writeText(text)
 }
 

@@ -51,7 +51,7 @@ private fun toJsCompatibleComplex(value: Any, dereferencer: CloudFormationTempla
     .map { p -> p as KProperty1<*,*> }
     .filter { p ->
     p.visibility == KVisibility.PUBLIC
-            && !p.name.equals("deletionPolicy") && !isEmpty( p.getter.call(value))
+            && !p.name.equals("deletionPolicy") && !isEmpty(p.getter.call(value))
   }
 
   val result = mutableMapOf<String, Any>()
@@ -71,7 +71,10 @@ private fun toJsCompatibleComplex(value: Any, dereferencer: CloudFormationTempla
     if (pValue != null && !(pValue is Map<*, *> && pValue.size == 0)
       && !(pValue is List<*> && pValue.size == 0)
     ) {
-      propertyContainer.put(propertyName2YamlName(it.name), toJsCompatible(pValue, dereferencer))
+      propertyContainer.put(
+        propertyName2YamlName(it.name),
+        toJsCompatible(pValue, dereferencer)
+      )
     }
   }
 
@@ -157,7 +160,8 @@ private fun toJsCompatible(value: Any, dereferencer: CloudFormationTemplate): An
   }
 }
 
-fun toJsCompatible(template: CloudFormationTemplate) = toJsCompatible(template, template)
+fun toJsCompatible(template: CloudFormationTemplate) =
+  toJsCompatible(template, template)
 
 private val indentStep = "  "
 

@@ -103,11 +103,11 @@ open class CloudFormationTemplate {
   }
 
   fun Parameter(
-    type: ParameterType,
-    description: String,
-    init: CloudFormationTemplate.Parameter.() -> Unit
-  ): CloudFormationTemplate.Parameter =
-    CloudFormationTemplate.Parameter(type, description).apply(init)
+      type: ParameterType,
+      description: String,
+      init: Parameter.() -> Unit
+  ): Parameter =
+    Parameter(type, description).apply(init)
 
 
   open class TemplateReference(val name: String) {
@@ -126,24 +126,24 @@ open class CloudFormationTemplate {
     val obj = refs.get(value)
     if (obj == null) throw RuntimeException("cant deref $obj")
     return if (obj is StaticResource) {
-      TemplateReference(obj.name)
+        TemplateReference(obj.name)
     } else if (obj is Resource) {
       val entries = resources.filter { entry -> entry.value == obj }.map { entry2 -> entry2.key }
       val resourceName =
         if (entries.size == 0) obj.getResourceType()
         else entries.get(0)
-      TemplateReference(resourceName)
+        TemplateReference(resourceName)
     } else if (obj is Parameter) {
       val names = parameters.filter { entry -> entry.value == obj }.map { entry2 -> entry2.key }
       if (names.size == 0) throw java.lang.RuntimeException("cant reference unkown paramete ${obj}")
-      TemplateReference(names.get(0))
+        TemplateReference(names.get(0))
     } else if (obj is Resource.Attribute) {
       val entries = resources.filter { entry -> entry.value == obj.parent }.map { entry2 -> entry2.key }
 
       if (entries.size == 0) {
         throw java.lang.RuntimeException("failed to locate resource ${obj.parent} for attribute ${obj.name}")
       }
-      AttributeReference(entries.get(0), obj.name)
+        AttributeReference(entries.get(0), obj.name)
     } else
       obj
   }

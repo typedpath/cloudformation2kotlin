@@ -5,7 +5,7 @@ abstract class Resource {
 
     enum class DeletionPolicyValue {Delete}
 
-    var  deletionPolicy:DeletionPolicyValue?=null
+    var  deletionPolicy: DeletionPolicyValue?=null
 
     //TODO this field should be available in AWS::IAM::Policy !
     //var description: String? = null
