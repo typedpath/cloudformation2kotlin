@@ -1,10 +1,10 @@
-package com.typedpath.cloudformation.tools.internaltest
+package com.typedpath.awscloudformation.test.withoutextension
 
 import com.typedpath.awscloudformation.*
-import com.typedpath.awscloudformation.schema.sample.AWS_S3_Bucket
-import com.typedpath.awscloudformation.schema.sample.AWS_S3_BucketPolicy
-import com.typedpath.awscloudformation.schema.sample.aWS_S3_Bucket
-import com.typedpath.awscloudformation.schema.sample.aWS_S3_BucketPolicy
+import com.typedpath.awscloudformation.schema.AWS_S3_Bucket
+import com.typedpath.awscloudformation.schema.AWS_S3_BucketPolicy
+import com.typedpath.awscloudformation.schema.aWS_S3_Bucket
+import com.typedpath.awscloudformation.schema.aWS_S3_BucketPolicy
 import java.util.*
 
 class S3BucketTest {

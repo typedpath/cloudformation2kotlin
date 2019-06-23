@@ -1,7 +1,7 @@
-package com.typedpath.cloudformation.tools.internaltest
+package com.typedpath.awscloudformation.test
 
 import com.typedpath.awscloudformation.*
-import com.typedpath.awscloudformation.schema.sample.*
+import com.typedpath.awscloudformation.schema.*
 
 class PipelineCloudFormationTemplate : CloudFormationTemplate() {
 
