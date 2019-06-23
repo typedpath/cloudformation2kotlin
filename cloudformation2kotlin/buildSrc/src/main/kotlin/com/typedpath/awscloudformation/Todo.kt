@@ -3,11 +3,10 @@ package com.typedpath.awscloudformation
 fun main(args: Array<String>) {
   println(
     """
-// TODO integration test - in cloudformationsample project
+// TODO pipeline integration test
 // TODO move copied code from package internal
 // TODO tidy s3maven deploy - implement non snapshot rule / add s3 bucket bootstrap
 // TODO binary distribution - jfrog ?
-// TODO more generic pipeline
 // TODO implement dependsOn
 // TODO add pipeline validation rules
 // TODO code this: https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-pipeline-structure.html
@@ -17,8 +16,9 @@ fun main(args: Array<String>) {
 // TODO implement Description
 // TODO complete all json files
 // TODO differentiate between regions
-// TODO eliminate file copies in build
-// TODO add json files to source sets so kotlin main src doesnt need any files
+// DONE TODO integration test - in cloudformationsample project
+// DONE TODO eliminate file copies in build
+// DONE N/A TODO add json files to source sets so kotlin main src doesnt need any files
 // DONE implement s3 maven deploy
 // DONE TODO implement Output
 // DONE TODO implement this style S3CloudFormationTemplate : CloudFormationTemplate

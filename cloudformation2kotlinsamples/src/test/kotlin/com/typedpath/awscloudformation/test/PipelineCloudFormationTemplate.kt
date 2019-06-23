@@ -2,8 +2,11 @@ package com.typedpath.awscloudformation.test
 
 import com.typedpath.awscloudformation.*
 import com.typedpath.awscloudformation.schema.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-class PipelineCloudFormationTemplate : CloudFormationTemplate() {
+class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTemplate() {
+
 
   val sourceBundleArtifactName = "sourceBundle"
   val buildArtifactName = "buildArtifact"
@@ -21,7 +24,7 @@ class PipelineCloudFormationTemplate : CloudFormationTemplate() {
     ParameterType.STRING,
     "repository name"
   ).apply {
-    default = "mymind"
+    default = defaultReponame
   }
 
   //outputs
@@ -35,6 +38,11 @@ class PipelineCloudFormationTemplate : CloudFormationTemplate() {
   }
 
   // resources
+
+
+  val codeRepository = AWS_CodeCommit_Repository(defaultReponame) .apply{
+  }
+
   val pipeLineBucket = AWS_S3_Bucket()
 
   val artifactsBucket =
@@ -222,8 +230,4 @@ class PipelineCloudFormationTemplate : CloudFormationTemplate() {
   ).apply {
     this.artifactStore = artifactStoreImpl
   }
-}
-
-fun main(args: Array<String>) {
-  println(toYaml(PipelineCloudFormationTemplate()))
 }
