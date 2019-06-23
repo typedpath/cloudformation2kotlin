@@ -1,4 +1,4 @@
-package com.typedpath.awscloudformation.sample
+package com.typedpath.awscloudformation.test
 
 import com.typedpath.awscloudformation.CloudFormationTemplate
 import com.typedpath.awscloudformation.IamPolicy
@@ -8,7 +8,7 @@ import com.typedpath.awscloudformation.toYaml
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class S3CloudFormationTemplate : CloudFormationTemplate() {
+class S3PublicReadableCloudFormationTemplate(bucketName: String) : CloudFormationTemplate() {
 
   val s3Bucket = AWS_S3_Bucket().apply {
     //TODO inject enumeration
@@ -17,7 +17,7 @@ class S3CloudFormationTemplate : CloudFormationTemplate() {
       indexDocument = "index.html"
       errorDocument = "error.html"
     }
-    this.bucketName = """maventesthost-${(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now()))}"""
+    this.bucketName = bucketName//
   }
 
   val policyDocument = IamPolicy().apply {
@@ -36,5 +36,6 @@ class S3CloudFormationTemplate : CloudFormationTemplate() {
 }
 
 fun main(args: Array<String>) {
-  println( toYaml(S3CloudFormationTemplate()))
+  println( toYaml(S3PublicReadableCloudFormationTemplate(
+          """testhost-${(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now()))}""")))
 }
