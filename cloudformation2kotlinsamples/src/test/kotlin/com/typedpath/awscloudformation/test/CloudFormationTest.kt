@@ -2,6 +2,7 @@ package com.typedpath.awscloudformation.test
 
 import com.amazonaws.AmazonClientException
 import com.amazonaws.AmazonServiceException
+import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudformation.AmazonCloudFormation
@@ -10,14 +11,10 @@ import com.amazonaws.services.cloudformation.model.*
 import com.typedpath.awscloudformation.CloudFormationTemplate
 import com.typedpath.awscloudformation.toYaml
 
-/**
- * this is based on https://github.com/aws/aws-sdk-java/tree/master/src/samples/AwsCloudFormation
- */
-fun test(template: CloudFormationTemplate, stackName: String, region: Regions = Regions.US_EAST_1, cleanup: Boolean = true, onSuccess: (credentialsProvider: ProfileCredentialsProvider) -> Unit = { }) {
 
-    val credentialsProvider = ProfileCredentialsProvider()
+fun defaultCredentialsProvider(): AWSCredentialsProvider {
     try {
-        credentialsProvider.getCredentials()
+        return ProfileCredentialsProvider()
     } catch (e: Exception) {
         throw AmazonClientException(
                 "Cannot load the credentials from the credential profiles file. " +
@@ -25,6 +22,14 @@ fun test(template: CloudFormationTemplate, stackName: String, region: Regions = 
                         "location (~/.aws/credentials), and is in valid format.",
                 e)
     }
+}
+
+/**
+ * this is based on https://github.com/aws/aws-sdk-java/tree/master/src/samples/AwsCloudFormation
+ */
+fun test(template: CloudFormationTemplate, stackName: String, region: Regions = Regions.US_EAST_1, cleanup: Boolean = true, onSuccess: (credentialsProvider: AWSCredentialsProvider) -> Unit = { }) {
+
+    val credentialsProvider = defaultCredentialsProvider()
 
     val stackbuilder = AmazonCloudFormationClientBuilder.standard()
             .withCredentials(credentialsProvider)
@@ -41,6 +46,7 @@ fun test(template: CloudFormationTemplate, stackName: String, region: Regions = 
         println(strTemplate)
         createRequest.setTemplateBody(strTemplate)
         println("Creating a stack called " + createRequest.getStackName() + ".")
+        createRequest.withCapabilities(Capability.CAPABILITY_IAM, Capability.CAPABILITY_NAMED_IAM)
         stackbuilder.createStack(createRequest)
 
         // Wait for stack to be created
@@ -116,15 +122,15 @@ fun waitForCompletion(stackbuilder: AmazonCloudFormation, stackName: String): St
     print("Waiting")
 
     while (!completed) {
-        var stacks : List<Stack>
-         try {
+        var stacks: List<Stack>
+        try {
             stacks = stackbuilder.describeStacks(wait).stacks
-         } catch (ace: AmazonCloudFormationException) {
-             //describe stacks bombs out if the stack doesnt exist
-             if (ace.message!!.contains("does not exist")) {
-                 stacks = emptyList()
-             } else throw ace
-         }
+        } catch (ace: AmazonCloudFormationException) {
+            //describe stacks bombs out if the stack doesnt exist
+            if (ace.message!!.contains("does not exist")) {
+                stacks = emptyList()
+            } else throw ace
+        }
         if (stacks.isEmpty()) {
             completed = true
             stackStatus = "NO_SUCH_STACK"

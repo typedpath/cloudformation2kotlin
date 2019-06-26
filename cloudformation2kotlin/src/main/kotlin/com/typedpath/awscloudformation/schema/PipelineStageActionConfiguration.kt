@@ -17,10 +17,10 @@ class CodeCommitActionConfiguration(
   val pollForSourceChanges: Boolean?=null
 }
 
-class CodeDeployActionConfiguration (
-  val applicationName: String,
-  val deploymentGroupName: String
-)
+class CodeDeployActionConfiguration(val applicationName: String,
+                                    val deploymentGroupName: String)  : PipelineStageActionConfiguration() {
+
+}
 
 enum class CodePipelineActionTypeIdCategory{
 Source, Build, Test, Deploy, Approval, Invoke
@@ -41,10 +41,11 @@ enum class CodePipelineActionProvider(val typeDescription: String){
   //SOurce
   S3("S3")/*also deploy*/, CodeCommit("CodeCommit"),
   GitHub("GitHub"), AmazonECR("Amazon ECR"),
-  CodeBuild("CodeBuild");
+  CodeBuild("CodeBuild"),
+  CodeDeploy("CodeDeploy");
   override fun toString() = typeDescription
   //Build
-/*  CodeBuild/*also test*/, CustomCloudBees, CustomJenkins/*also test*/, CustomTeamCity,
+/*  TODO add these CodeBuild/*also test*/, CustomCloudBees, CustomJenkins/*also test*/, CustomTeamCity,
   //Test
   AWSDeviceFarm, CustomBlazeMeter, ThirdPartyGhostInspector,
   ThirdPartyMicroFocusStormRunnerLoad,
