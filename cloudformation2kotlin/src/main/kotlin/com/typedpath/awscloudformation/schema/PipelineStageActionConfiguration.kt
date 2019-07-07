@@ -2,8 +2,7 @@ package com.typedpath.awscloudformation.schema
 
 import com.typedpath.awscloudformation.schema.AWS_CodePipeline_Pipeline
 
-//see https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-pipeline-structure.html#action-requirements
-
+//see zm
 open class PipelineStageActionConfiguration
 
 class CodeBuildActionConfiguration(val projectName: String) : PipelineStageActionConfiguration() {

@@ -66,7 +66,7 @@ open class CloudFormationTemplate {
     override fun getResourceType(): String = name
   }
 
-  private fun refStatic(name: String): String {
+  fun refStatic(name: String): String {
     val id = UUID.randomUUID().toString()
     refs.put(id, StaticResource(name))
     return id
@@ -78,6 +78,19 @@ open class CloudFormationTemplate {
 
   fun refCurrentAccountId(): String = refStatic(currentAccountId)
 
+  fun multilineValue(str: String): String {
+    val id = UUID.randomUUID().toString()
+    val lines = listOf<String>("!Sub |").plus(str.lines())
+    refs.put(id,  MultiLineValue(lines))
+    return id
+  }
+
+  fun inlineJsCode(js: String) : String {
+// make sure there first line has no initial space
+     return multilineValue("""
+// code inline ${Date()}
+$js""".trimIndent())
+  }
 
   class JoinStatement(val delimiter: String, val items: List<String>) {
 
@@ -112,7 +125,8 @@ open class CloudFormationTemplate {
 
   open class TemplateReference(val name: String) {
     open fun materialise(): String {
-      return "!Ref $name"
+      val isArn = name.toLowerCase().endsWith(".arn")
+      return """${if (isArn)"!GetAtt" else "!Ref"} $name"""
     }
   }
 

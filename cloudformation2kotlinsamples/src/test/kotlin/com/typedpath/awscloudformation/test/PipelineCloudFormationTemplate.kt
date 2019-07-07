@@ -89,7 +89,7 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
             principal = mapOf(
                     Pair(
                             IamPolicy.PrincipalType.Service,
-                            listOf("codebuild.amazonaws.com", "codepipeline.amazonaws.com")
+                            listOf("codebuild.amazonaws.com", "codepipeline.amazonaws.com", "codedeploy.amazonaws.com")
                     )
             )
         }
@@ -218,6 +218,24 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
     ).apply {
     }
 
+    val lambdaAppName = "appOf$defaultReponame"
+    val lambdaDeploymentGroup = "deploymentGroupOf$defaultReponame"
+
+    var deployApp = AWS_CodeDeploy_Application().apply {
+        applicationName = lambdaAppName
+        computePlatform = "Lambda"
+    }
+
+    //see https://stackoverflow.com/questions/52636182/ec2tagfilters-in-deployment-group-for-computeplatform-lambda
+    var deployGroup = AWS_CodeDeploy_DeploymentGroup(lambdaAppName, ref(codePipelineServiceRole.arnAttribute())).apply {
+        deploymentConfigName = "CodeDeployDefault.LambdaAllAtOnce"
+        deploymentGroupName = lambdaDeploymentGroup
+        deploymentStyle = AWS_CodeDeploy_DeploymentGroup.DeploymentStyle().apply {
+            deploymentOption = "WITH_TRAFFIC_CONTROL"
+            deploymentType = "BLUE_GREEN"
+        }
+    }
+
     val deployStage = AWS_CodePipeline_Pipeline.StageDeclaration(
             listOf(
                     AWS_CodePipeline_Pipeline.ActionDeclaration(
@@ -229,7 +247,7 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
                     ).apply {
                         inputArtifacts = listOf(AWS_CodePipeline_Pipeline.InputArtifact(buildArtifactName))
                         //outputArtifacts = listOf(AWS_CodePipeline_Pipeline.OutputArtifact(buildArtifactName))
-                        configuration = CodeDeployActionConfiguration("testApp", "testDEploymentGroup")
+                        configuration = CodeDeployActionConfiguration(lambdaAppName, lambdaDeploymentGroup)
                         runOrder = 1
                     }
             ),
@@ -237,10 +255,28 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
     ).apply {
     }
 
-
     val artifactStoreImpl = AWS_CodePipeline_Pipeline.ArtifactStore(
             location = ref(artifactsBucket), type = "S3"
     )
+
+
+    val lambdaDeployStage = AWS_CodePipeline_Pipeline.StageDeclaration(
+            listOf(
+                    AWS_CodePipeline_Pipeline.ActionDeclaration(
+                            actionTypeId(
+                                    CodePipelineActionTypeIdCategory.Deploy, CodePipelineActionTypeIdOwner.AWS,
+                                    CodePipelineActionProvider.AWSLAmbda
+                            ),
+                            "LambdaDeployAction"
+                    ).apply {
+                        inputArtifacts = listOf(AWS_CodePipeline_Pipeline.InputArtifact(buildArtifactName))
+                        //outputArtifacts = listOf(AWS_CodePipeline_Pipeline.OutputArtifact(buildArtifactName))
+                        configuration = CodeDeployActionConfiguration(lambdaAppName, lambdaDeploymentGroup)
+                        runOrder = 1
+                    }
+
+            ), "LambdaDeployStage"
+    ).apply{}
 
     val pipeline = AWS_CodePipeline_Pipeline(
             ref(codePipelineServiceRole.arnAttribute()),

@@ -156,7 +156,7 @@ fun waitForCompletion(stackbuilder: AmazonCloudFormation, stackName: String): St
         print(".")
 
         // Not done yet so sleep for 10 seconds.
-        if (completed) Thread.sleep(5000)
+        if (!completed) Thread.sleep(5000)
     }
 
     // Show we are done

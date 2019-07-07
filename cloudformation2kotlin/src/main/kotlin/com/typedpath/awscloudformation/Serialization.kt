@@ -5,6 +5,9 @@ import kotlin.reflect.KProperty1
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.memberProperties
 
+class MultiLineValue(val lines: List<String>) {
+}
+
 fun toYamlString(any: Any): String {
   var myStringBuilder = MyStringBuilder("\r\n")
   toYaml(myStringBuilder, newIndent(), any)
@@ -91,6 +94,14 @@ class MyStringBuilder(private val newLine: String) {
 
   fun isNewLined() = !unNewLined
 
+  fun append(indent: () -> String, lines: MultiLineValue ) {
+       lines.lines.forEach {
+         sb.append(indent())
+         sb.append(it)
+         newLine()
+       }
+  }
+
   fun append(str: String) {
     sb.append(str)
     if (str.length > 0) {
@@ -108,7 +119,9 @@ class MyStringBuilder(private val newLine: String) {
 
 private fun isComplex(value: Any?): Boolean = value != null &&
         value.javaClass.name.startsWith("com.typedpath") &&
-        !value.javaClass.kotlin.equals(ParameterType::class)
+        !value.javaClass.kotlin.equals(ParameterType::class) &&
+        !value.javaClass.kotlin.equals(MultiLineValue::class)
+
 
 private fun toJsSimpleValue(
   value: Any
@@ -126,6 +139,9 @@ private fun toJsCompatible(value: Any, dereferencer: CloudFormationTemplate): An
     value.materialise()
   } else if (value is CloudFormationTemplate.AttributeReference) {
     value.materialise()
+  }
+  else if (value is MultiLineValue) {
+    value
   }
   else if (value.javaClass.isEnum) {
     value.toString()
@@ -210,14 +226,20 @@ private fun toYaml(
           indent.pop()
         } else {
           sb.append(effectivePeekIndent())
-          sb.append(it.value.toString())
+          if (it.value is MultiLineValue) {
+            indent(indent)
+            sb.append(::effectivePeekIndent, it.value as MultiLineValue)
+            indent.pop()
+          }
+          else sb.append(it.value.toString())
           sb.newLine()
         }
       }
     }
   } else {
     sb.append(effectivePeekIndent())
-    sb.append(value.toString())
+    if (value is MultiLineValue) sb.append(::effectivePeekIndent, value)
+    else sb.append(value.toString())
   }
 }
 

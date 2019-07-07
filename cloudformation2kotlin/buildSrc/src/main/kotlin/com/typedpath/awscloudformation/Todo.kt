@@ -4,7 +4,9 @@ fun main(args: Array<String>) {
   println(
     """
 // TODO pipeline integration test
+//     https://docs.aws.amazon.com/solutions/latest/aws-cloudformation-validation-pipeline/template.html
 // TODO move copied code from package internal
+// TODO add attributed validation rules e.g. Lambda.Code (one of Zip, S3 Bucket etc)
 // TODO tidy s3maven deploy - implement non snapshot rule / add s3 bucket bootstrap
 // TODO binary distribution - jfrog ?
 // TODO implement dependsOn

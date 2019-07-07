@@ -14,9 +14,6 @@ import java.time.format.DateTimeFormatter
 
 class PipelineTest {
 
-
-    private fun readLine(url: URL): String = (BufferedReader(InputStreamReader(url.openStream()))).readLine()
-
     @Test
     fun addSource(repoName: String) {
 
@@ -32,19 +29,17 @@ class PipelineTest {
         createCommitRequest.branchName = "master"
         createCommitRequest.repositoryName = repoName
         createCommitRequest.setPutFiles(mutableListOf())
-        createCommitRequest.putFiles.add(PutFileEntry()
-                .withFileContent(ByteBuffer.wrap(buildspecyml.toByteArray()))
-                .withFilePath("buildspec.yml"))
-        createCommitRequest.putFiles.add(PutFileEntry()
-                .withFileContent(ByteBuffer.wrap(pomxml.toByteArray()))
-                .withFilePath("pom.xml"))
-        createCommitRequest.putFiles.add(PutFileEntry()
-                .withFileContent(ByteBuffer.wrap(Hellojava.toByteArray()))
-                .withFilePath("src/main/java/example/Hello.java"))
-        createCommitRequest.putFiles.add(PutFileEntry()
-                .withFileContent(ByteBuffer.wrap(appspecyml.toByteArray()))
-                .withFilePath("appspec.yml"))
+
+        fun addfile(code: String, path: String) = createCommitRequest.putFiles.add(PutFileEntry()
+                .withFileContent(ByteBuffer.wrap(code.toByteArray()))
+                .withFilePath(path))
+        addfile(buildspecyml, "buildspec.yml")
+        addfile(pomxml, "pom.xml")
+        addfile(Hellojava, "src/main/java/example/Hello.java")
+        addfile(appspecyml, "appspec.yml")
+
         var branch:GetBranchResult
+        //if there is a branch set the parentCommitId
         try {
             val getBranchRequest = GetBranchRequest()
             getBranchRequest.branchName = "master"
@@ -54,51 +49,12 @@ class PipelineTest {
         } catch (be: BranchDoesNotExistException) {
         }
         client.createCommit(createCommitRequest)
-        /*   var branch:GetBranchResult
-           try {
-               val getBranchRequest = GetBranchRequest()
-               getBranchRequest.branchName = "master"
-               getBranchRequest.repositoryName = repoName
-               branch = client.getBranch(getBranchRequest)
-           } catch (be: BranchDoesNotExistException) {
-               val branchRequest = CreateBranchRequest()
-               branchRequest.repositoryName=repoName
-               branchRequest.branchName = "master"
-   //            branchRequest.commitId =
-               client.createBranch(branchRequest)
-           }
-
-           fun putFile(filename: String, path: String, content: String) {
-               val putFileRequest = PutFileRequest()
-               val getBranchRequest = GetBranchRequest()
-               getBranchRequest.branchName = "master"
-               getBranchRequest.repositoryName = repoName
-               val branch = client.getBranch(getBranchRequest)
-               putFileRequest.name = filename
-               putFileRequest.fileContent = ByteBuffer.wrap(content.toByteArray())
-               putFileRequest.repositoryName = repoName
-               putFileRequest.branchName = "master"
-               putFileRequest.filePath = path
-   //            putFileRequest.fileMode = FileModeTypeEnum.NORMAL.toString()
-                   putFileRequest.parentCommitId = branch.branch.commitId
-               try {
-                   client.putFile(putFileRequest)
-               } catch (e: SameFileContentException) {
-
-               }
-           }
-           putFile("readme.txt", "readme.txt", "just a test commit")
-           putFile("buildspec.yml", "buildspec.yml", buildspecyml)
-           putFile("pom.xml", "pom.xml", pomxml)
-           putFile("Hello.java", "src/main/java/example/Hello.java", Hellojava)
-           putFile("appspec.yml", "apppec.yml", appspecyml)
-   */
-    }
+        }
 
     @Test
     fun pipleline() {
 
-        val strDateTime = (DateTimeFormatter.ofPattern("ddMMMyy-HHMMss")).format(LocalDateTime.now())
+        val strDateTime = (DateTimeFormatter.ofPattern("ddMMMyy-HHmmss")).format(LocalDateTime.now())
 
         val defaultReponame = "testrepo$strDateTime"
 
@@ -128,8 +84,8 @@ class PipelineTest {
 
 fun main(args: Array<String>) {
     val repo = "testrepo26Jun19-120603"
-    PipelineTest().addSource(repo)
-    //PipelineTest().pipleline()
+    //PipelineTest().addSource(repo)
+    PipelineTest().pipleline()
 }
 
 

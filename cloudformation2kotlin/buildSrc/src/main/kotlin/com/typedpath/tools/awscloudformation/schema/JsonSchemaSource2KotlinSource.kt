@@ -46,6 +46,7 @@ private fun propertySpec(
   var type = propertySpec.get("Type") as String?
 
   val isList = "List".equals(type)
+  val isMap = "Map".equals(type)
   var primitiveItemType = propertySpec.get("PrimitiveItemType")
   var itemType = propertySpec.get("ItemType") as String?
 
@@ -76,7 +77,8 @@ private fun propertySpec(
   fun scopedItemType(type: String?) = if (isExternal) "$parentType.$type" else type
 
   val typeSpec =
-    if (isList) "List<${if (primitiveItemType != null) primitiveItemType else scopedItemType(itemType)}>"
+    if (isMap) "Map<String, ${if (primitiveItemType != null) primitiveItemType else scopedItemType(itemType)}>"
+    else if (isList) "List<${if (primitiveItemType != null) primitiveItemType else scopedItemType(itemType)}>"
     else ("${if (primitiveType != null) primitiveType else scopedItemType(type)}")
   //println("***name: typespec=> $name: $typeSpec primitiveType=>$primitiveType  type=>$type  isList=>$isList primitiveItemType=?$primitiveItemType itemType:$itemType")
 

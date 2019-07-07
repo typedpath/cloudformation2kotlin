@@ -24,6 +24,7 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "com.typedpath:cloudformation2kotlin:1.0-SNAPSHOT"
+    testCompile ("com.amazonaws:aws-java-sdk-lambda:1.11.574")
     testCompile ("com.amazonaws:aws-java-sdk-s3:1.11.574")
     testCompile("com.amazonaws:aws-java-sdk-cloudformation:1.11.574")
     testCompile("com.amazonaws:aws-java-sdk-codecommit:1.11.574")
