@@ -85,12 +85,15 @@ open class CloudFormationTemplate {
     return id
   }
 
-  fun inlineJsCode(js: String) : String {
+  fun inlineCode(js: String, commentStart: String = "//") : String {
 // make sure there first line has no initial space
      return multilineValue("""
-// code inline ${Date()}
+$commentStart code inlined on ${Date()} by CloudFormationTemplate.kt
 $js""".trimIndent())
   }
+
+
+
 
   class JoinStatement(val delimiter: String, val items: List<String>) {
 

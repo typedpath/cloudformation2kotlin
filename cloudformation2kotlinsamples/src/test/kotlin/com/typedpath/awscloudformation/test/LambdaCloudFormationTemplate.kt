@@ -5,13 +5,14 @@ import com.typedpath.awscloudformation.IamPolicy
 import com.typedpath.awscloudformation.LambdaRuntime
 import com.typedpath.awscloudformation.schema.AWS_IAM_Role
 import com.typedpath.awscloudformation.schema.AWS_Lambda_Function
-import com.typedpath.awscloudformation.toYaml
 
-class LambdaCloudFormationTemplate(functionName: String, jsCode: String) : CloudFormationTemplate() {
+open class LambdaCloudFormationTemplate(val functionNameIn: String, val strCode: String,
+                                   val runtime: LambdaRuntime = LambdaRuntime.NodeJs810, val handler: String = "index.handler") : CloudFormationTemplate() {
 
 
     val code = AWS_Lambda_Function.Code().apply {
-        zipFile = inlineJsCode(jsCode)
+        val comment = if (runtime.id.toLowerCase().contains("python")) "#" else "//"
+        zipFile = inlineCode(strCode, comment)
     }
 
     val assumeRolePolicyDocument = IamPolicy().apply {
@@ -30,8 +31,8 @@ class LambdaCloudFormationTemplate(functionName: String, jsCode: String) : Cloud
         managedPolicyArns = listOf("arn:aws:iam::aws:policy/AWSLambdaExecute")
     }
 
-    val lambdaFunction = AWS_Lambda_Function(code, "index.handler",
-            ref(lambdaRole.arnAttribute()), LambdaRuntime.NodeJs810.id).apply {
-        this.functionName = functionName
+    val lambdaFunction = AWS_Lambda_Function(code, handler,
+            ref(lambdaRole.arnAttribute()), runtime.id).apply {
+        functionName = functionNameIn
     }
 }

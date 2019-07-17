@@ -2,7 +2,7 @@ package com.typedpath.awscloudformation.schema
 
 import com.typedpath.awscloudformation.schema.AWS_CodePipeline_Pipeline
 
-//see zm
+//see https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-pipeline-structure.html#action-requirements
 open class PipelineStageActionConfiguration
 
 class CodeBuildActionConfiguration(val projectName: String) : PipelineStageActionConfiguration() {
@@ -19,6 +19,10 @@ class CodeCommitActionConfiguration(
 class CodeDeployActionConfiguration(val applicationName: String,
                                     val deploymentGroupName: String)  : PipelineStageActionConfiguration() {
 
+}
+
+class InvokeLambdaActionConfiguration(val functionName: String)  : PipelineStageActionConfiguration() {
+ var userParameters : String? = null
 }
 
 enum class CodePipelineActionTypeIdCategory{
@@ -41,7 +45,8 @@ enum class CodePipelineActionProvider(val typeDescription: String){
   S3("S3")/*also deploy*/, CodeCommit("CodeCommit"),
   GitHub("GitHub"), AmazonECR("Amazon ECR"),
   CodeBuild("CodeBuild"),
-  CodeDeploy("CodeDeploy");
+  CodeDeploy("CodeDeploy"),
+  AWSLambda("Lambda");
   override fun toString() = typeDescription
   //Build
 /*  TODO add these CodeBuild/*also test*/, CustomCloudBees, CustomJenkins/*also test*/, CustomTeamCity,

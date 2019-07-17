@@ -18,6 +18,7 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
         default = "master"
     }
 
+    //todo remove this parameter or adjust user of defaultRepoName
     val codeCommitRepoName = CloudFormationTemplate.Parameter(
             ParameterType.STRING,
             "repository name"
@@ -110,6 +111,8 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
                 encryptionDisabled = true
                 location = ref(artifactsBucket)
                 name = defaultReponame
+                packaging = "NONE"
+
             },
             ref(codeBuildRole),
             AWS_CodeBuild_Project.Environment(
@@ -259,28 +262,115 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
             location = ref(artifactsBucket), type = "S3"
     )
 
+    val lambdaDeployFunctionName = "lambdaDeploy$defaultReponame"
+
+    //TODO put in a file
+    //TODO code calls bacj pipleine
+    val code = AWS_Lambda_Function.Code().apply {
+        zipFile = inlineCode("""
+var AWS = require('aws-sdk');
+exports.handler = function(event, context) {
+    var codepipeline = new AWS.CodePipeline();
+    // Retrieve the Job ID from the Lambda action
+    var jobId = event["CodePipeline.job"].id;
+//var responseData = {Message: 'Hello'};
+
+  // Retrieve the value of UserParameters from the Lambda action configuration in AWS CodePipeline, in this case a URL which will be
+    // health checked by this function.
+    var url = event["CodePipeline.job"].data.actionConfiguration.configuration.UserParameters;
+
+    // Notify AWS CodePipeline of a successful job
+    var putJobSuccess = function(message) {
+        var params = {
+            jobId: jobId
+        };
+        codepipeline.putJobSuccessResult(params, function(err, data) {
+            if(err) {
+                context.fail(err);
+            } else {
+                context.succeed(message);
+            }
+        });
+    };
+
+console.log("here");
+
+putJobSuccess("Everything OK")
+console.log("here2");
+
+//context.succeed('hello my name is $lambdaDeployFunctionName was i supposed to deploy something?');
+}""")
+    }
+
+    val lambdaAssumeRolePolicyDocument = IamPolicy().apply {
+        statement {
+            //TODO make this a constant
+            action("sts:AssumeRole")
+            effect = IamPolicy.EffectType.Allow
+            //TODO make this a constant
+            principal = mapOf(Pair(IamPolicy.PrincipalType.Service, listOf("lambda.amazonaws.com"))
+            )
+        }
+/*  where do these go ?        statement {
+            //TODO make this a constant
+            action("codepipeline:PutJobSuccessResult")
+            action("codepipeline:PutJobFailureResult")
+            effect = IamPolicy.EffectType.Allow
+            resource = listOf("*")
+            //TODO make this a constant
+            principal = mapOf(Pair(IamPolicy.PrincipalType.Service, listOf("lambda.amazonaws.com"))
+            )
+        }
+*/
+    }
+
+    val lambdaPolicy = IamPolicy().apply {
+       statement {
+            //TODO make this a constant
+            action("codepipeline:PutJobSuccessResult")
+            action("codepipeline:PutJobFailureResult")
+            effect = IamPolicy.EffectType.Allow
+            resource = listOf("*")
+        }
+    }
+
+    // https://docs.aws.amazon.com/codepipeline/latest/userguide/actions-invoke-lambda-function.html
+    //TODO permission to communicate with pipeline
+    val lambdaRole = AWS_IAM_Role(lambdaAssumeRolePolicyDocument).apply {
+        //TODO make this a constantS
+        policies = listOf(
+                AWS_IAM_Role.Policy(lambdaPolicy, "lambdaPolicy")
+        )
+        managedPolicyArns = listOf("arn:aws:iam::aws:policy/AWSLambdaExecute")
+
+    }
+
+    val lambdaFunction = AWS_Lambda_Function(code, "index.handler",
+            ref(lambdaRole.arnAttribute()), LambdaRuntime.NodeJs810.id).apply {
+        functionName = lambdaDeployFunctionName
+    }
 
     val lambdaDeployStage = AWS_CodePipeline_Pipeline.StageDeclaration(
             listOf(
                     AWS_CodePipeline_Pipeline.ActionDeclaration(
                             actionTypeId(
-                                    CodePipelineActionTypeIdCategory.Deploy, CodePipelineActionTypeIdOwner.AWS,
-                                    CodePipelineActionProvider.AWSLAmbda
+                                    CodePipelineActionTypeIdCategory.Invoke, CodePipelineActionTypeIdOwner.AWS,
+                                    CodePipelineActionProvider.AWSLambda
                             ),
                             "LambdaDeployAction"
                     ).apply {
                         inputArtifacts = listOf(AWS_CodePipeline_Pipeline.InputArtifact(buildArtifactName))
                         //outputArtifacts = listOf(AWS_CodePipeline_Pipeline.OutputArtifact(buildArtifactName))
-                        configuration = CodeDeployActionConfiguration(lambdaAppName, lambdaDeploymentGroup)
+                        configuration = InvokeLambdaActionConfiguration(lambdaDeployFunctionName)
                         runOrder = 1
                     }
 
             ), "LambdaDeployStage"
-    ).apply{}
+    ).apply {}
 
     val pipeline = AWS_CodePipeline_Pipeline(
             ref(codePipelineServiceRole.arnAttribute()),
-            listOf(sourceStage, buildStage, deployStage)
+            listOf(sourceStage, buildStage, lambdaDeployStage /*deployStage*/)
     ).apply {
         this.artifactStore = artifactStoreImpl
     }

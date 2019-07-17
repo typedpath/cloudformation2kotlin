@@ -51,16 +51,13 @@ val Hellojava="""
 package example;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
 
-public class Hello {
-    public String myHandler(int myCount, Context context) {
-        LambdaLogger logger = context.getLogger();
-        logger.log("received : " + myCount);
-        return String.valueOf(myCount);
-    }
-}
-""".trimIndent()
+public class Hello implements RequestHandler<Object, Object>{
+  public Object handleRequest(Object in, Context context) {
+    return "hello";
+  }
+}""".trimIndent()
 
 val buildspecyml = """
 version: 0.2
