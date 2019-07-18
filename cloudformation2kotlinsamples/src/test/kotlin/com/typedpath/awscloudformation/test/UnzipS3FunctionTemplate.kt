@@ -6,7 +6,7 @@ import com.typedpath.awscloudformation.schema.AWS_S3_Bucket
 import com.typedpath.awscloudformation.schema.AWS_S3_BucketPolicy
 
 
-class UnzipFunctionTemplate(functionName: String, testBucketName: String) : LambdaCloudFormationTemplate(functionName, pythonZipFunction(testBucketName),
+class UnzipS3FunctionTemplate(functionName: String, testBucketName: String) : LambdaCloudFormationTemplate(functionName, pythonZipFunction(testBucketName),
         LambdaRuntime.Python3_7, "index.lambda_handler") {
 
     val s3Bucket = AWS_S3_Bucket().apply {

@@ -1,7 +1,6 @@
 package com.typedpath.awscloudformation.test
 
 import com.amazonaws.auth.AWSCredentialsProvider
-import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.lambda.AWSLambdaClientBuilder
 import com.amazonaws.services.lambda.model.InvocationType
@@ -87,7 +86,7 @@ class UnzipFunctionTest {
         val functionName = """testunziplambda$strDateTime"""
         val testBucketName = """testunzipbucket$strDateTime"""
 
-        val testTemplate = UnzipFunctionTemplate(functionName, testBucketName)
+        val testTemplate = UnzipS3FunctionTemplate(functionName, testBucketName)
         val strStackName = """testStack$strDateTime"""
 
         val region = Regions.US_EAST_1

@@ -8,7 +8,7 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
 
     val sourceBundleArtifactName = "sourceBundle"
     val buildArtifactName = "buildArtifact"
-
+    val lambdaDeployArtifactName="lambdaDeployArtifact"
     // parameters
 
     val sourceBranchName = CloudFormationTemplate.Parameter(
@@ -267,39 +267,7 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
     //TODO put in a file
     //TODO code calls bacj pipleine
     val code = AWS_Lambda_Function.Code().apply {
-        zipFile = inlineCode("""
-var AWS = require('aws-sdk');
-exports.handler = function(event, context) {
-    var codepipeline = new AWS.CodePipeline();
-    // Retrieve the Job ID from the Lambda action
-    var jobId = event["CodePipeline.job"].id;
-//var responseData = {Message: 'Hello'};
-
-  // Retrieve the value of UserParameters from the Lambda action configuration in AWS CodePipeline, in this case a URL which will be
-    // health checked by this function.
-    var url = event["CodePipeline.job"].data.actionConfiguration.configuration.UserParameters;
-
-    // Notify AWS CodePipeline of a successful job
-    var putJobSuccess = function(message) {
-        var params = {
-            jobId: jobId
-        };
-        codepipeline.putJobSuccessResult(params, function(err, data) {
-            if(err) {
-                context.fail(err);
-            } else {
-                context.succeed(message);
-            }
-        });
-    };
-
-console.log("here");
-
-putJobSuccess("Everything OK")
-console.log("here2");
-
-//context.succeed('hello my name is $lambdaDeployFunctionName was i supposed to deploy something?');
-}""")
+        zipFile = inlineCode(pythonUnzipArtifactFunction)
     }
 
     val lambdaAssumeRolePolicyDocument = IamPolicy().apply {
@@ -311,7 +279,7 @@ console.log("here2");
             principal = mapOf(Pair(IamPolicy.PrincipalType.Service, listOf("lambda.amazonaws.com"))
             )
         }
-/*  where do these go ?        statement {
+/*  where do these go ?  statement {
             //TODO make this a constant
             action("codepipeline:PutJobSuccessResult")
             action("codepipeline:PutJobFailureResult")
@@ -346,7 +314,7 @@ console.log("here2");
     }
 
     val lambdaFunction = AWS_Lambda_Function(code, "index.handler",
-            ref(lambdaRole.arnAttribute()), LambdaRuntime.NodeJs810.id).apply {
+            ref(lambdaRole.arnAttribute()), LambdaRuntime.Python3_7.id).apply {
         functionName = lambdaDeployFunctionName
     }
 
@@ -360,7 +328,7 @@ console.log("here2");
                             "LambdaDeployAction"
                     ).apply {
                         inputArtifacts = listOf(AWS_CodePipeline_Pipeline.InputArtifact(buildArtifactName))
-                        //outputArtifacts = listOf(AWS_CodePipeline_Pipeline.OutputArtifact(buildArtifactName))
+                        outputArtifacts = listOf(AWS_CodePipeline_Pipeline.OutputArtifact(lambdaDeployArtifactName))
                         configuration = InvokeLambdaActionConfiguration(lambdaDeployFunctionName)
                         runOrder = 1
                     }

@@ -94,3 +94,51 @@ Resources:
 # (Optional) In the Hooks section, specify a validation Lambda function to run during
 # a lifecycle event. Replace "LifeCycleEvent" with BeforeAllowTraffic
 # or AfterAllowTraffic. """
+
+
+val __samplePipelineInput ="""
+    {
+    "CodePipeline.job": {
+        "id": "7e62de82-4fcf-4ee6-a787-e007319c8b47",
+        "accountId": "950651224730",
+        "data": {
+            "actionConfiguration": {
+                "configuration": {
+                    "FunctionName": "lambdaDeploytestrepo17Jul19-211546"
+                }
+            },
+            "inputArtifacts": [
+                {
+                    "name": "buildArtifact",
+                    "revision": null,
+                    "location": {
+                        "type": "S3",
+                        "s3Location": {
+                            "bucketName": "teststack17jul19-211546-artifactsbucket-rjjkgn23g01s",
+                            "objectKey": "testStack17Jul19-211/buildArtif/5b3d9Bw"
+                        }
+                    }
+                }
+            ],
+            "outputArtifacts": [
+                {
+                    "name": "lambdaDeployArtifact",
+                    "revision": null,
+                    "location": {
+                        "type": "S3",
+                        "s3Location": {
+                            "bucketName": "teststack17jul19-211546-artifactsbucket-rjjkgn23g01s",
+                            "objectKey": "testStack17Jul19-211/lambdaDepl/JQ2di3f"
+                        }
+                    }
+                }
+            ],
+            "artifactCredentials": {
+                "accessKeyId": "ASIA52VZ2QKNEGG7OVEF",
+                "secretAccessKey": "CiCyIYAFGZO85D4kmv2MC/86Xd6kURIEGPDjrGYH",
+                "sessionToken": "AgoJb3JpZ2luX2VjEOb//////////wEaCXVzLWVhc3QtMSJIMEYCIQD36lvOhixH/60PwvBVrt/i/xRLF20UI68Sc+APf/XyWgIhANHqxIdEfFjLKNsBxwsA5SyouqzfMyqK8SAEFQTS8qrzKrsFCE4QABoMOTUwNjUxMjI0NzMwIgzJbDBLMg1lw6EgPEIqmAXv9o1+X83pn+LnXkiGr6utAOrWGkANOks8wrPRYg4tWYho8UKO9BHvisZCw7LOZ1WbjvRr4gZ6R1NQZJieR9b5Gw7owtkRKJzkDLVjB0nnhtn5QJ0rbTWEecPDKdMn6+5ovZ3PsrrbskhCXdLwKPwEJhKR5M8vVwM2GBoBbjlMSDyqpGXlmRoK/UX7DMM0CY4g1p85OrnhP9l/bfzsirEoO//rzpzziyt19XCRYOABt2itkCAYbxmgXP4TqgmQdWm+IyyvYSk7Dq2dIc/l05AEc6naI3EUXLospiHmcaJ6ZuV3jL4jidT5a2NwaaDzrCPbbojNc3sFZMayC5u61Ss2+NydVLX8RxboUxP9aPfEyTh2QIiSzlfhr5bhB6jfd/0uNo8FQcYo+xurbn/yL0aO9ktRPAw4bTyIHc6zUENvgV1qNA4KG8for8na4LOpXBrko3nfbr25sTdT8byaKggjDJQoeJh3MqsA8DmeidqMaOJHwqAQyGVNMrdAlNGvJE3u+4DXnAl6F5FwAJxDgnqZCPnMA/9hMaW24xVvbsF2Y+6Sh5L3nVrGfPfBcFbANC3Lg4JYgAyTkizLTMutarnUlI9cmAYVPU17uRPYklAh8j0GN9zWaJ4/8RblD8XmAFQ0xCEWJQxkdN1V0K75pHVQF0/lTB04K1Z6MS6yNNE8eTiuWaHjvkNwNhsmZayKZZ17tRhWUlFddF62eW7ZC8CnQguhwdhwyXqAACTLug46Z+8cbKUVWYG1sZ/04VudjCDOsWposL6ZhPdEjRB8bKWaQ8YRumOxvDF9H3wq6FF+F+1dE28KM3V0iHr/Wjjl674rpkayuZnSVocoGtlOvIeqXX0Z/aKtuwrAoB3SxoUZZjmSiz/cZHhNMNKdvukFOrMBIiwacLcMnfvO+dnktqVyudWLjI3QP9QJMbteczNRF0lSumfmrteKPnJsn1yP4INgj+xfnxVQ8pdlBFQUR8HuaWtmv063HvCGqBU0xO8BHiLArZy9BKBnwGlmvF40jqJDj5dXuS+Hl1XvZKCzVsXNEcJLMJaWOJaZJQaE2gnKTpK3qmWPW7imQFbGuDMdkFdhvWgwdG+O+deQdHJ7BqHlGM/AqUB+Yu8yYa636Jqb6fNteGo="
+            }
+        }
+    }
+}
+""".trimIndent()

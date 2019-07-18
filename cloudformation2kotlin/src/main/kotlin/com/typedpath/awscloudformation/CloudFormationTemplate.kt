@@ -92,8 +92,7 @@ $commentStart code inlined on ${Date()} by CloudFormationTemplate.kt
 $js""".trimIndent())
   }
 
-
-
+  fun inlinePythonCode(str: String) : String = inlineCode(str, "#")
 
   class JoinStatement(val delimiter: String, val items: List<String>) {
 
