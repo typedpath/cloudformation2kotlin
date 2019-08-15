@@ -1,14 +1,20 @@
-package com.typedpath.awscloudformation.test
+package com.typedpath.awscloudformation.test.pipeline
 
 import com.typedpath.awscloudformation.*
 import com.typedpath.awscloudformation.schema.*
 
-class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTemplate() {
+//TODO
+// add latest deployment function
+//change template file from appspec.yml
+
+class PipelineCloudFormationTemplate(defaultReponame: String, targetCloudFormationTemplateFilename: String,
+                                     codePackageFilename: String
+) : CloudFormationTemplate() {
 
 
     val sourceBundleArtifactName = "sourceBundle"
     val buildArtifactName = "buildArtifact"
-    val lambdaDeployArtifactName="lambdaDeployArtifact"
+    val lambdaDeployArtifactName = "lambdaDeployArtifact"
     // parameters
 
     val sourceBranchName = CloudFormationTemplate.Parameter(
@@ -35,9 +41,6 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
             export = Output.Export(join("-", listOf(refCurrentStack(), refCurrentRegion(), "ArtifactsBucket")))
         }
     }
-
-    // resources
-
 
     val codeRepository = AWS_CodeCommit_Repository(defaultReponame).apply {
     }
@@ -129,8 +132,6 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
         name = join("", listOf("CodeBuildProject", refCurrentStack()))
     }
 
-//val pipeline = AWS_
-
     val codePipelineServicePolicy = IamPolicy().apply {
         statement {
             action += "s3:GetObject"
@@ -199,8 +200,7 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
                     }
             ),
             "Source"
-    ).apply {
-    }
+    )
 
     val buildStage = AWS_CodePipeline_Pipeline.StageDeclaration(
             listOf(
@@ -218,8 +218,7 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
                     }
             ),
             "Build"
-    ).apply {
-    }
+    )
 
     val lambdaAppName = "appOf$defaultReponame"
     val lambdaDeploymentGroup = "deploymentGroupOf$defaultReponame"
@@ -239,35 +238,40 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
         }
     }
 
-    val deployStage = AWS_CodePipeline_Pipeline.StageDeclaration(
-            listOf(
-                    AWS_CodePipeline_Pipeline.ActionDeclaration(
-                            actionTypeId(
-                                    CodePipelineActionTypeIdCategory.Deploy, CodePipelineActionTypeIdOwner.AWS,
-                                    CodePipelineActionProvider.CodeDeploy
-                            ),
-                            "DeployAction"
-                    ).apply {
-                        inputArtifacts = listOf(AWS_CodePipeline_Pipeline.InputArtifact(buildArtifactName))
-                        //outputArtifacts = listOf(AWS_CodePipeline_Pipeline.OutputArtifact(buildArtifactName))
-                        configuration = CodeDeployActionConfiguration(lambdaAppName, lambdaDeploymentGroup)
-                        runOrder = 1
-                    }
-            ),
-            "Deploy"
-    ).apply {
+    val deployStage by lazy {
+        AWS_CodePipeline_Pipeline.StageDeclaration(
+                listOf(
+                        AWS_CodePipeline_Pipeline.ActionDeclaration(
+                                actionTypeId(
+                                        CodePipelineActionTypeIdCategory.Deploy, CodePipelineActionTypeIdOwner.AWS,
+                                        CodePipelineActionProvider.CodeDeploy
+                                ),
+                                "DeployAction"
+                        ).apply {
+                            inputArtifacts = listOf(AWS_CodePipeline_Pipeline.InputArtifact(lambdaDeployArtifactName))
+                            //outputArtifacts = listOf(AWS_CodePipeline_Pipeline.OutputArtifact(buildArtifactName))
+                            configuration = CodeDeployActionConfiguration(lambdaAppName, lambdaDeploymentGroup)
+                            runOrder = 1
+                            //roleArn = ref(lambdaRole.arnAttribute())
+                        }
+                ),
+                "Deploy"
+        )
     }
 
     val artifactStoreImpl = AWS_CodePipeline_Pipeline.ArtifactStore(
             location = ref(artifactsBucket), type = "S3"
     )
 
+    val lambdaUnzipFunctionName = "lambdaUnzip$defaultReponame"
     val lambdaDeployFunctionName = "lambdaDeploy$defaultReponame"
 
-    //TODO put in a file
-    //TODO code calls bacj pipleine
-    val code = AWS_Lambda_Function.Code().apply {
-        zipFile = inlineCode(pythonUnzipArtifactFunction)
+    val unzipcode = AWS_Lambda_Function.Code().apply {
+        zipFile = inlinePythonCode(pythonUnzipArtifactFunction)
+    }
+
+    val deploycode = AWS_Lambda_Function.Code().apply {
+        zipFile = inlinePythonCode(pythonDeployLambdaCodeFunction(targetCloudFormationTemplateFilename, codePackageFilename))
     }
 
     val lambdaAssumeRolePolicyDocument = IamPolicy().apply {
@@ -279,31 +283,24 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
             principal = mapOf(Pair(IamPolicy.PrincipalType.Service, listOf("lambda.amazonaws.com"))
             )
         }
-/*  where do these go ?  statement {
-            //TODO make this a constant
-            action("codepipeline:PutJobSuccessResult")
-            action("codepipeline:PutJobFailureResult")
-            effect = IamPolicy.EffectType.Allow
-            resource = listOf("*")
-            //TODO make this a constant
-            principal = mapOf(Pair(IamPolicy.PrincipalType.Service, listOf("lambda.amazonaws.com"))
-            )
-        }
-*/
+
     }
 
     val lambdaPolicy = IamPolicy().apply {
-       statement {
+        statement {
             //TODO make this a constant
             action("codepipeline:PutJobSuccessResult")
             action("codepipeline:PutJobFailureResult")
+            action("cloudformation:*")
+            action("iam:*")
+            action("lambda:*")
+            //TODO add iam:* so roles can be created
             effect = IamPolicy.EffectType.Allow
             resource = listOf("*")
         }
     }
 
     // https://docs.aws.amazon.com/codepipeline/latest/userguide/actions-invoke-lambda-function.html
-    //TODO permission to communicate with pipeline
     val lambdaRole = AWS_IAM_Role(lambdaAssumeRolePolicyDocument).apply {
         //TODO make this a constantS
         policies = listOf(
@@ -313,10 +310,34 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
 
     }
 
-    val lambdaFunction = AWS_Lambda_Function(code, "index.handler",
+    val lambdaUnzipFunction = AWS_Lambda_Function(unzipcode, "index.handler",
+            ref(lambdaRole.arnAttribute()), LambdaRuntime.Python3_7.id).apply {
+        functionName = lambdaUnzipFunctionName
+    }
+
+    val lambdaDeployFunction = AWS_Lambda_Function(deploycode, "index.handler",
             ref(lambdaRole.arnAttribute()), LambdaRuntime.Python3_7.id).apply {
         functionName = lambdaDeployFunctionName
     }
+
+
+    val lambdaUnzipStage = AWS_CodePipeline_Pipeline.StageDeclaration(
+            listOf(
+                    AWS_CodePipeline_Pipeline.ActionDeclaration(
+                            actionTypeId(
+                                    CodePipelineActionTypeIdCategory.Invoke, CodePipelineActionTypeIdOwner.AWS,
+                                    CodePipelineActionProvider.AWSLambda
+                            ),
+                            "LambdaUnzipAction"
+                    ).apply {
+                        inputArtifacts = listOf(AWS_CodePipeline_Pipeline.InputArtifact(buildArtifactName))
+                        outputArtifacts = listOf(AWS_CodePipeline_Pipeline.OutputArtifact(lambdaDeployArtifactName))
+                        configuration = InvokeLambdaActionConfiguration(lambdaUnzipFunctionName)
+                        runOrder = 1
+                    }
+
+            ), "LambdaUnzipStage"
+    )
 
     val lambdaDeployStage = AWS_CodePipeline_Pipeline.StageDeclaration(
             listOf(
@@ -327,18 +348,18 @@ class PipelineCloudFormationTemplate(defaultReponame: String) : CloudFormationTe
                             ),
                             "LambdaDeployAction"
                     ).apply {
-                        inputArtifacts = listOf(AWS_CodePipeline_Pipeline.InputArtifact(buildArtifactName))
-                        outputArtifacts = listOf(AWS_CodePipeline_Pipeline.OutputArtifact(lambdaDeployArtifactName))
+                        inputArtifacts = listOf(AWS_CodePipeline_Pipeline.InputArtifact(lambdaDeployArtifactName))
                         configuration = InvokeLambdaActionConfiguration(lambdaDeployFunctionName)
                         runOrder = 1
                     }
 
             ), "LambdaDeployStage"
-    ).apply {}
+    )
+
 
     val pipeline = AWS_CodePipeline_Pipeline(
             ref(codePipelineServiceRole.arnAttribute()),
-            listOf(sourceStage, buildStage, lambdaDeployStage /*deployStage*/)
+            listOf(sourceStage, buildStage, lambdaUnzipStage, lambdaDeployStage)
     ).apply {
         this.artifactStore = artifactStoreImpl
     }

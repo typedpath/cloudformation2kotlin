@@ -39,7 +39,7 @@ class UnzipS3FunctionTemplate(functionName: String, testBucketName: String) : La
 }
 //based on https://www.quora.com/How-do-I-extract-a-zip-file-in-an-Amazon-S3-by-using-Lambda
 private fun pythonZipFunction(bucketName: String)="""
-#based on code here: https://www.quora.com/How-do-I-extract-a-zip-file-in-an-Amazon-S3-by-using-Lambda
+#based on unzipcode here: https://www.quora.com/How-do-I-extract-a-zip-file-in-an-Amazon-S3-by-using-Lambda
 from __future__ import print_function
 
 import urllib

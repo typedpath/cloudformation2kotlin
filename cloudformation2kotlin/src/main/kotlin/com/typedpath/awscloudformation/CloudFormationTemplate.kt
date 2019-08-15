@@ -88,7 +88,7 @@ open class CloudFormationTemplate {
   fun inlineCode(js: String, commentStart: String = "//") : String {
 // make sure there first line has no initial space
      return multilineValue("""
-$commentStart code inlined on ${Date()} by CloudFormationTemplate.kt
+$commentStart inline
 $js""".trimIndent())
   }
 

@@ -1,12 +1,11 @@
-package com.typedpath.awscloudformation.test
+package com.typedpath.awscloudformation.test.pipeline
 
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.codecommit.AWSCodeCommitClientBuilder
 import com.amazonaws.services.codecommit.model.*
+import com.typedpath.awscloudformation.test.*
+import com.typedpath.awscloudformation.toYaml
 import org.junit.Test
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.URL
 import java.nio.ByteBuffer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -14,7 +13,9 @@ import java.time.format.DateTimeFormatter
 
 class PipelineTest {
 
-    @Test
+    val targetCloudFormationTemplateFilename = "cloudFormationTemplate.yml"
+    val codePackageFilename = "lambda-java-example-1.0-SNAPSHOT.jar"
+
     fun addSource(repoName: String) {
 
 
@@ -36,7 +37,7 @@ class PipelineTest {
         addfile(buildspecyml, "buildspec.yml")
         addfile(pomxml, "pom.xml")
         addfile(Hellojava, "src/main/java/example/Hello.java")
-        addfile(appspecyml, "appspec.yml")
+        addfile(cloudFormationTemplate, targetCloudFormationTemplateFilename)
 
         var branch:GetBranchResult
         //if there is a branch set the parentCommitId
@@ -58,7 +59,7 @@ class PipelineTest {
 
         val defaultReponame = "testrepo$strDateTime"
 
-        val testTemplate = PipelineCloudFormationTemplate(defaultReponame)
+        val testTemplate = PipelineCloudFormationTemplate(defaultReponame, targetCloudFormationTemplateFilename, codePackageFilename)
         val strStackName = """testStack$strDateTime"""
 
         val region = Regions.US_EAST_1
@@ -66,7 +67,7 @@ class PipelineTest {
         test(testTemplate, strStackName, region, false) { credentialsProvider ->
             println("""*********testing testing credentials $credentialsProvider*************""")
             try {
-                // add files to the code source
+                // add files to the unzipcode source
                 // wait for build artifict
                 // wait for deployment
                 // test deployment
@@ -86,6 +87,8 @@ fun main(args: Array<String>) {
     val repo = "testrepo26Jun19-120603"
     //PipelineTest().addSource(repo)
     PipelineTest().pipleline()
+    //println(toYaml(JavaLambdaTemplate("%functionName%", "%s3bucket%", "%s3key%", "example.Hello")))
+
 }
 
 
