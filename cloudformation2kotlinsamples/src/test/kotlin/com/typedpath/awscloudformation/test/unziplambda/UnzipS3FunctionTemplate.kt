@@ -1,9 +1,10 @@
-package com.typedpath.awscloudformation.test
+package com.typedpath.awscloudformation.test.unziplambda
 
 import com.typedpath.awscloudformation.IamPolicy
 import com.typedpath.awscloudformation.LambdaRuntime
 import com.typedpath.awscloudformation.schema.AWS_S3_Bucket
 import com.typedpath.awscloudformation.schema.AWS_S3_BucketPolicy
+import com.typedpath.awscloudformation.test.lambda.LambdaCloudFormationTemplate
 
 
 class UnzipS3FunctionTemplate(functionName: String, testBucketName: String) : LambdaCloudFormationTemplate(functionName, pythonZipFunction(testBucketName),

@@ -1,9 +1,10 @@
-package com.typedpath.awscloudformation.test
+package com.typedpath.awscloudformation.test.lambda
 
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.lambda.AWSLambdaClientBuilder
 import com.amazonaws.services.lambda.model.InvocationType
 import com.amazonaws.services.lambda.model.InvokeRequest
+import com.typedpath.awscloudformation.test.test
 import org.junit.Assert
 import org.junit.Test
 import java.nio.ByteBuffer
@@ -29,7 +30,7 @@ context.succeed('$returnMessage')
 };"""
 
         val testTemplate = LambdaCloudFormationTemplate(functionName, jsCode)
-        val strStackName = """testStack$strDateTime"""
+        val strStackName = """lambdaTestStack$strDateTime"""
 
         val region = Regions.US_EAST_1
 
@@ -41,14 +42,14 @@ context.succeed('$returnMessage')
                 request.functionName = functionName
                 request.invocationType = InvocationType.RequestResponse.toString()
                 request.payload = ByteBuffer.wrap("""{"message": "hello"}""".toByteArray())
-                val result  = client.invoke(request)
+                val result = client.invoke(request)
                 val strResponse = String(result.payload.array())
                 System.out.println(strResponse)
                 Assert.assertTrue(strResponse.contains(returnMessage))
                 //System.out.println("hello")
             } catch (e: Exception) {
                 e.printStackTrace()
-                error(""+e.message)
+                error("" + e.message)
                 throw RuntimeException("failed s3 test", e)
             }
         }

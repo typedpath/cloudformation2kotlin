@@ -1,8 +1,9 @@
-package com.typedpath.awscloudformation.test
+package com.typedpath.awscloudformation.test.s3
 
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.ObjectMetadata
+import com.typedpath.awscloudformation.test.test
 import org.junit.Assert
 import org.junit.Test
 import java.io.BufferedReader
@@ -25,11 +26,11 @@ class S3Test {
         val bucketName = """s3publicreadabletest-$strDateTime"""
 
         val testTemplate = S3PublicReadableCloudFormationTemplate(bucketName)
-        val strStackName = """testStack$strDateTime"""
+        val strStackName = """s3testStack$strDateTime"""
 
         val region = Regions.US_EAST_1
 
-        test(testTemplate, strStackName, region, true) { credentialsProvider ->
+        test(testTemplate, strStackName, region, false) { credentialsProvider ->
             println("""*********testing testing credentials $credentialsProvider*************""")
             try {
                 val s3Client = AmazonS3ClientBuilder.standard()
@@ -55,7 +56,7 @@ class S3Test {
                 s3Client.deleteObject(bucketName, fileObjKeyName)
 
             } catch (e: Exception) {
-                error(""+e.message)
+                error("" + e.message)
                 throw RuntimeException("failed s3 test", e)
             }
         }

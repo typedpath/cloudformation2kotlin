@@ -11,6 +11,11 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
+/**
+ *  This test creates a 4 stage code pipeline with template PipelineCloudFormationTemplate.
+ *  In order to test it adds code for a testUnzip function to the created repository and waits for the pipeline
+ *  to deploy it. TODO Then calls the testUnzip to check the deployment worked.
+ */
 class PipelineTest {
 
     val targetCloudFormationTemplateFilename = "cloudFormationTemplate.yml"
@@ -53,14 +58,14 @@ class PipelineTest {
         }
 
     @Test
-    fun pipleline() {
+    fun pipeline() {
 
         val strDateTime = (DateTimeFormatter.ofPattern("ddMMMyy-HHmmss")).format(LocalDateTime.now())
 
         val defaultReponame = "testrepo$strDateTime"
 
         val testTemplate = PipelineCloudFormationTemplate(defaultReponame, targetCloudFormationTemplateFilename, codePackageFilename)
-        val strStackName = """testStack$strDateTime"""
+        val strStackName = """pipelineTestStack$strDateTime"""
 
         val region = Regions.US_EAST_1
 
@@ -86,7 +91,7 @@ class PipelineTest {
 fun main(args: Array<String>) {
     val repo = "testrepo26Jun19-120603"
     //PipelineTest().addSource(repo)
-    PipelineTest().pipleline()
+    PipelineTest().pipeline()
     //println(toYaml(JavaLambdaTemplate("%functionName%", "%s3bucket%", "%s3key%", "example.Hello")))
 
 }

@@ -1,4 +1,4 @@
-package com.typedpath.awscloudformation.test
+package com.typedpath.awscloudformation.test.s3
 
 import com.typedpath.awscloudformation.CloudFormationTemplate
 import com.typedpath.awscloudformation.IamPolicy

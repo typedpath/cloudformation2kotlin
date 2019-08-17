@@ -1,4 +1,4 @@
-package com.typedpath.awscloudformation.test
+package com.typedpath.awscloudformation.test.unziplambda
 
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.regions.Regions
@@ -7,6 +7,7 @@ import com.amazonaws.services.lambda.model.InvocationType
 import com.amazonaws.services.lambda.model.InvokeRequest
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.ObjectMetadata
+import com.typedpath.awscloudformation.test.test
 import org.junit.Assert
 import org.junit.Test
 import java.io.ByteArrayInputStream
@@ -19,6 +20,11 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 
+/**
+ * this creates an unzip (s3) lambda function using cloudformation template UnzipS3FunctionTemplate
+ * it then writes a zip file to an s3 bucket, then calls the function to unzip this file and downloads the files from
+ * s3 to check it
+ */
 class UnzipFunctionTest {
 
     val strDateTime = DateTimeFormatter.ofPattern("ddMMyyyy-HHmmss").format(LocalDateTime.now())
@@ -38,9 +44,6 @@ class UnzipFunctionTest {
         }
         return baos.toByteArray()
     }
-
-//testunzipbucket16072019-181502
-    //testStack16072019-181502-lambdaFunction-O1G30JS7W6M8
 
     fun uploadUnzipDownload(credentialsProvider: AWSCredentialsProvider, region: Regions,
                                     testBucketName: String, functionName: String) {
@@ -80,14 +83,14 @@ class UnzipFunctionTest {
 
 
     @Test
-    fun lambda() {
+    fun testUnzip() {
 
 
         val functionName = """testunziplambda$strDateTime"""
         val testBucketName = """testunzipbucket$strDateTime"""
 
         val testTemplate = UnzipS3FunctionTemplate(functionName, testBucketName)
-        val strStackName = """testStack$strDateTime"""
+        val strStackName = """unzipFunctionTestStack$strDateTime"""
 
         val region = Regions.US_EAST_1
 
@@ -110,6 +113,6 @@ fun main(args: Array<String>) {
     val bucketName="testunzipbucket16072019-233350"
     val functionName ="testunziplambda16072019-233350"
     //UnzipFunctionTest().uploadUnzipDownload(ProfileCredentialsProvider(), Regions.US_EAST_1, bucketName, functionName )
-    UnzipFunctionTest().lambda()
+    UnzipFunctionTest().testUnzip()
 
 }
