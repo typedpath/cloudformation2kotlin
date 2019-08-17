@@ -32,7 +32,7 @@ compileKotlin {
     doFirst {
         println("********************")
         JsonSchema2KotlinKt.transformDirectory("${projectDir}",
-                ["**/sample/*.json"],
+                ["**/us-east1_active/*.json"],
                 "${buildDir.absolutePath}/generated/source/kotlin/", "com.typedpath.awscloudformation.schema")
     }
     kotlinOptions.jvmTarget = "1.8"

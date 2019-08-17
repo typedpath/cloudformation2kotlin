@@ -2,6 +2,11 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 .idea/**/**/*
+.idea/**/*
+.idea/*
+.gradle/**/*
+.gradle/*
+
 
 buildSrc/build/**/**/*
 .idea/sonarlint/**/*
