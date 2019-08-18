@@ -19,5 +19,19 @@ This will run the junit tests, creating cloud cloudformation stacks from (kotlin
 | Test | Template | Test Description |
 | --- | --- | ----- |
 | s3Test.kt | S3PublicReadableCloudFormationTemplate.kt |write to s3 bucket in stack , read from s3 bucket |
-| LambdaTest.kt | LambdaCloudFormationTemplate | call lambda in stack |
-| PipelineTest | PipelineCloudFormationTemplate | create stack with 4 stage pipeline + code repository, checkin code and test lambda created by pipeline |
+| LambdaTest.kt | LambdaCloudFormationTemplate.kt | call lambda in stack |
+| UnzipFunctionTest.kt | UnzipS3FunctionTemplate.kt | create a stack with an s3 bucket and an unzipping lambda function, upload a zip file and unzip it with the lambda function |
+| PipelineTest.kt | PipelineCloudFormationTemplate.kt | create stack with 4 stage pipeline + code repository, checkin code and test lambda created by pipeline |
+
+<h2>Templates</h2>
+The example listed above create templates by extension e.g.:
+<pre>class S3PublicReadableCloudFormationTemplate(bucketName: String) : CloudFormationTemplate() {...</pre>
+templates declared in this way will have a cloudformation resource for every property that extends com.typedpath.awscloudformation.Resource. Proeprties in superclasses will be included. 
+In the case of S3PublicReadableCloudFormationTemplate.kt these 2 property declarations map to an s3 bucket and a s3 bucket policy in the stack:
+<pre>
+   val s3Bucket = AWS_S3_Bucket() . . . . 
+   val s3BucketPolicy = AWS_S3_BucketPolicy(ref(s3Bucket), policyDocument) . . . .
+</pre>
+
+
+

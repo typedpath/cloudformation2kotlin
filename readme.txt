@@ -1,1 +1,0 @@
-mapping from aws cloudformation schema to kotlin
