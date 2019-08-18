@@ -53,7 +53,7 @@ s3BucketPolicy:
             Effect: Allow
 . . . .
 </pre>
-Note the use of helper function <i>ref(Bucket)</i>) - this makes it difficult to create an invalid cloudformation reference.
+Note the use of helper function <i>ref(s3Bucket)</i>) - this makes it difficult to create an invalid cloudformation reference.
 
 The property definition for policyDocument is:
 <pre>
@@ -68,4 +68,4 @@ The property definition for policyDocument is:
     }
   }
 </pre>
-The constructor for <i>IamPolicy</i> has no arguments because there are no mandatory properties.  Non mandatory properties are specified in the <i>apply</i> block. Note also that policyDocument does not appear in the top level of the yaml template, it is inlined where it is referenced.  This is because it is not a cloud formation resource i.e. not an instance of  <i>com.typedpath.awscloudformation.Resource</i>.  IamPolicy was created manually (unlike most other clodformation schema in Kotlin) because I couldnt find an amazon supplied json schema for it.  
+The constructor for <i>IamPolicy</i> has no arguments because there are no mandatory properties.  Non mandatory properties are specified in the <i>apply</i> block. Note also that policyDocument does not appear in the top level of the yaml template, it is inlined where it is referenced.  This is because it is not a cloud formation resource i.e. not an instance of  <i>com.typedpath.awscloudformation.Resource</i>.  Class IamPolicy was created manually (unlike Kotlin resource definiton classes) because I couldnt find an amazon supplied schema (json or otherwise) for it.  
