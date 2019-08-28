@@ -10,6 +10,8 @@ import com.amazonaws.services.cloudformation.AmazonCloudFormationClientBuilder
 import com.amazonaws.services.cloudformation.model.*
 import com.typedpath.awscloudformation.CloudFormationTemplate
 import com.typedpath.awscloudformation.toYaml
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 fun defaultCredentialsProvider(): AWSCredentialsProvider {
@@ -27,7 +29,8 @@ fun defaultCredentialsProvider(): AWSCredentialsProvider {
 /**
  * this is based on https://github.com/aws/aws-sdk-java/tree/master/src/samples/AwsCloudFormation
  */
-fun test(template: CloudFormationTemplate, stackName: String, region: Regions = Regions.US_EAST_1, cleanup: Boolean = true, onSuccess: (credentialsProvider: AWSCredentialsProvider) -> Unit = { }) {
+fun test(template: CloudFormationTemplate, stackName: String, region: Regions = Regions.US_EAST_1,
+         cleanup: Boolean = true, onSuccess: (credentialsProvider: AWSCredentialsProvider, outputs: List<Output>) -> Unit) {
 
     val credentialsProvider = defaultCredentialsProvider()
 
@@ -46,7 +49,7 @@ fun test(template: CloudFormationTemplate, stackName: String, region: Regions = 
         println(strTemplate)
         createRequest.setTemplateBody(strTemplate)
         println("Creating a stack called " + createRequest.getStackName() + ".")
-        createRequest.withCapabilities(Capability.CAPABILITY_IAM, Capability.CAPABILITY_NAMED_IAM)
+        createRequest.withCapabilities(Capability.CAPABILITY_IAM, Capability.CAPABILITY_NAMED_IAM, Capability.CAPABILITY_AUTO_EXPAND)
         stackbuilder.createStack(createRequest)
 
         // Wait for stack to be created
@@ -54,26 +57,39 @@ fun test(template: CloudFormationTemplate, stackName: String, region: Regions = 
         println("Stack creation completed, the stack " + stackName + " completed with " + waitForCompletion(stackbuilder, stackName))
 
         // Show all the stacks for this account along with the resources for each stack
-        for (stack in stackbuilder.describeStacks(DescribeStacksRequest()).getStacks()) {
-            println("Stack : " + stack.getStackName() + " [" + stack.getStackStatus().toString() + "]")
-
-            val stackResourceRequest = DescribeStackResourcesRequest()
-            stackResourceRequest.setStackName(stack.getStackName())
-            for (resource in stackbuilder.describeStackResources(stackResourceRequest).getStackResources()) {
-                System.out.format("    %1$-40s %2$-25s %3\$s\n", resource.getResourceType(), resource.getLogicalResourceId(), resource.getPhysicalResourceId())
-            }
-        }
-
         // Lookup a resource by its logical name
         val logicalNameResourceRequest = DescribeStackResourcesRequest()
         logicalNameResourceRequest.setStackName(stackName)
         logicalNameResourceRequest.setLogicalResourceId(logicalResourceName)
-        System.out.format("Looking up resource name %1\$s from stack %2\$s\n", logicalNameResourceRequest.getLogicalResourceId(), logicalNameResourceRequest.getStackName())
-        for (resource in stackbuilder.describeStackResources(logicalNameResourceRequest).getStackResources()) {
-            System.out.format("    %1$-40s %2$-25s %3\$s\n", resource.getResourceType(), resource.getLogicalResourceId(), resource.getPhysicalResourceId())
+        println("Looking up resource name ${logicalNameResourceRequest.getLogicalResourceId()} from stack ${logicalNameResourceRequest.getStackName()}")
+
+        var completeStack: Stack? = null
+
+        val describeStacksRequest = DescribeStacksRequest().withStackName(stackName);
+
+        val timeoutMiliSeconds = 180 * 1000
+
+        val startTime = System.currentTimeMillis()
+        while (completeStack == null) {
+            val theStacks = stackbuilder.describeStacks(describeStacksRequest).stacks
+            if (theStacks != null && theStacks.size > 0 && !theStacks.get(0).stackStatus.toUpperCase().contains("PROGRESS")
+            ) {
+                completeStack = theStacks.get(0)
+            } else {
+                Thread.sleep(300)
+            }
+            if ((System.currentTimeMillis() - startTime) > timeoutMiliSeconds) {
+                println("timed out wait for stack")
+                throw RuntimeException("times out waiting for stack $stackName to complete")
+            }
         }
 
-        onSuccess(credentialsProvider)
+        println("stack ${completeStack.stackName} status :  ${completeStack.stackStatus}")
+
+
+        val outputs = completeStack.outputs
+
+        onSuccess(credentialsProvider, outputs)
 
     } catch (ase: AmazonServiceException) {
         println(("Caught an AmazonServiceException, which means your request made it " + "to AWS CloudFormation, but was rejected with an error response for some reason."))
@@ -82,11 +98,13 @@ fun test(template: CloudFormationTemplate, stackName: String, region: Regions = 
         println("AWS Error Code:   " + ase.errorCode)
         println("Error Type:       " + ase.errorType)
         println("Request ID:       " + ase.requestId)
+        throw RuntimeException(ase)
     } catch (ace: AmazonClientException) {
         println(("Caught an AmazonClientException, which means the client encountered "
                 + "a serious internal problem while trying to communicate with AWS CloudFormation, "
                 + "such as not being able to access the network."))
         println("Error Message: " + ace.message)
+        throw RuntimeException(ace)
     } finally {
         if (cleanup) {
             // Delete the stack
@@ -102,6 +120,12 @@ fun test(template: CloudFormationTemplate, stackName: String, region: Regions = 
     }
 
 }
+
+
+fun defaultStackName(cloudFormationTemplate: CloudFormationTemplate): String =
+        "${cloudFormationTemplate.javaClass.name.toLowerCase().replace('.', '-')
+                .replace('$', '-')}-${(DateTimeFormatter.ofPattern("ddMMMyy-HHmmss")).format(LocalDateTime.now()).toLowerCase()}"
+
 
 // Wait for a stack to complete transitioning
 // End stack states are:
@@ -140,6 +164,7 @@ fun waitForCompletion(stackbuilder: AmazonCloudFormation, stackName: String): St
                 if (stack.stackStatus == StackStatus.CREATE_COMPLETE.toString() ||
                         stack.stackStatus == StackStatus.CREATE_FAILED.toString() ||
                         stack.stackStatus == StackStatus.ROLLBACK_FAILED.toString() ||
+                        stack.stackStatus == StackStatus.ROLLBACK_COMPLETE.toString() ||
                         stack.stackStatus == StackStatus.DELETE_FAILED.toString()) {
                     completed = true
                     stackStatus = stack.stackStatus

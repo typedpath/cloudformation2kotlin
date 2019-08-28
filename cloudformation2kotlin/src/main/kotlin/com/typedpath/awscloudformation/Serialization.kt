@@ -135,11 +135,11 @@ private fun toJsSimpleValue(
 
 private fun toJsCompatible(value: Any, dereferencer: CloudFormationTemplate): Any {
 
-  return if (value is CloudFormationTemplate.TemplateReference) {
+  return if (value is CloudFormationTemplate.Materializeable) {
     value.materialise()
-  } else if (value is CloudFormationTemplate.AttributeReference) {
+  } /*else if (value is CloudFormationTemplate.AttributeReference) {
     value.materialise()
-  }
+  }*/
   else if (value is MultiLineValue) {
     value
   }

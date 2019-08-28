@@ -94,7 +94,7 @@ class UnzipFunctionTest {
 
         val region = Regions.US_EAST_1
 
-        test(testTemplate, strStackName, region, false) { credentialsProvider ->
+        test(testTemplate, strStackName, region, false) { credentialsProvider, outputs ->
             println("""*********testing testing credentials $credentialsProvider*************""")
             try {
                 System.out.println("created stack - running unzip test!")

@@ -13,6 +13,8 @@ enum class ParameterType(val awsTypeName: String) {
 
 open class CloudFormationTemplate {
   val AWSTemplateFormatVersion = "2010-09-09"
+  open val transform: String? = null
+  open val description : String? = null
 
   class Parameter(val type: ParameterType, val description: String) {
     var default: String? = null
@@ -30,7 +32,7 @@ open class CloudFormationTemplate {
 
   // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html
   class Output(val value: String) {
-    val description: String? = null
+    var description: String? = null
 
     class Export(val name: String)
 
@@ -117,6 +119,13 @@ $js""".trimIndent())
     return id
   }
 
+  fun sub(value: String): String {
+    val id = UUID.randomUUID().toString()
+    val f = SingleLineFunctionCall("""!Sub "$value"""")
+    refs.put(id, f)
+    return id
+  }
+
   fun Parameter(
       type: ParameterType,
       description: String,
@@ -124,21 +133,33 @@ $js""".trimIndent())
   ): Parameter =
     Parameter(type, description).apply(init)
 
+  abstract class Materializeable {
+     abstract fun materialise() : Any
+  }
 
-  open class TemplateReference(val name: String) {
-    open fun materialise(): String {
+  open class TemplateReference(val name: String) : Materializeable(){
+    override fun materialise(): String {
       val isArn = name.toLowerCase().endsWith(".arn")
       return """${if (isArn)"!GetAtt" else "!Ref"} $name"""
     }
   }
 
-  class AttributeReference(val resourceName: String, val attributeName: String) {
-    fun materialise(): Map<String, List<String>> {
+  class AttributeReference(val resourceName: String, val attributeName: String) : Materializeable() {
+    override  fun materialise(): Map<String, List<String>> {
       return mapOf(Pair("Fn::GetAtt", listOf(resourceName, attributeName)))
     }
   }
 
+  open class SingleLineFunctionCall(val value: String) : Materializeable() {
+    override fun materialise(): String {
+      return value
+    }
+  }
+
   fun deref(value: Any): Any {
+    //TODO inline function call
+
+
     val obj = refs.get(value)
     if (obj == null) throw RuntimeException("cant deref $obj")
     return if (obj is StaticResource) {

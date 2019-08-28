@@ -30,7 +30,7 @@ class S3Test {
 
         val region = Regions.US_EAST_1
 
-        test(testTemplate, strStackName, region, false) { credentialsProvider ->
+        test(testTemplate, strStackName, region, false) { credentialsProvider, outputs ->
             println("""*********testing testing credentials $credentialsProvider*************""")
             try {
                 val s3Client = AmazonS3ClientBuilder.standard()
