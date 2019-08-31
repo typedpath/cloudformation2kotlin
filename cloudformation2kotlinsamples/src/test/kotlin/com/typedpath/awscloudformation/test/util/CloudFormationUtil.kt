@@ -1,4 +1,4 @@
-package com.typedpath.awscloudformation.test
+package com.typedpath.awscloudformation.test.util
 
 import com.amazonaws.AmazonClientException
 import com.amazonaws.AmazonServiceException
@@ -29,8 +29,8 @@ fun defaultCredentialsProvider(): AWSCredentialsProvider {
 /**
  * this is based on https://github.com/aws/aws-sdk-java/tree/master/src/samples/AwsCloudFormation
  */
-fun test(template: CloudFormationTemplate, stackName: String, region: Regions = Regions.US_EAST_1,
-         cleanup: Boolean = true, onSuccess: (credentialsProvider: AWSCredentialsProvider, outputs: List<Output>) -> Unit) {
+fun createStack(template: CloudFormationTemplate, stackName: String, region: Regions = Regions.US_EAST_1,
+                cleanup: Boolean = true, onSuccess: (credentialsProvider: AWSCredentialsProvider, outputs: List<Output>) -> Unit) {
 
     val credentialsProvider = defaultCredentialsProvider()
 

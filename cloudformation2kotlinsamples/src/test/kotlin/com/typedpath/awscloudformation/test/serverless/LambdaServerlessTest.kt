@@ -4,8 +4,10 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.lambda.AWSLambdaClientBuilder
 import com.amazonaws.services.lambda.model.InvocationType
 import com.amazonaws.services.lambda.model.InvokeRequest
-import com.typedpath.awscloudformation.test.*
-import com.typedpath.awscloudformation.test.s3.S3PublicReadableCloudFormationTemplate
+import com.typedpath.awscloudformation.test.util.addSource
+import com.typedpath.awscloudformation.test.util.createStack
+import com.typedpath.awscloudformation.test.util.defaultCredentialsProvider
+import com.typedpath.awscloudformation.test.util.defaultStackName
 import com.typedpath.awscloudformation.test.withoutextension.getOrCreateTestArtifactS3BucketName
 import com.typedpath.awscloudformation.toYaml
 import org.junit.Assert
@@ -26,7 +28,7 @@ class LambdaServerlessTest {
 
         val strDateTime = (DateTimeFormatter.ofPattern("ddMMMyy-HHmmss")).format(LocalDateTime.now()).toLowerCase()
 
-        val credentialsProvider =   defaultCredentialsProvider()
+        val credentialsProvider = defaultCredentialsProvider()
 
         val bucketName =   getOrCreateTestArtifactS3BucketName(region, credentialsProvider) //"$name$strDateTime"
         val codePackageName = "codepackage.zip"
@@ -38,8 +40,7 @@ class LambdaServerlessTest {
         val lambdaStackName = defaultStackName(lambdaTemplate)
         println(toYaml(lambdaTemplate))
 
-        test(lambdaTemplate, lambdaStackName, region, false) {
-            credentialsProvider, outputs ->
+        createStack(lambdaTemplate, lambdaStackName, region, false) { credentialsProvider, outputs ->
             val client = AWSLambdaClientBuilder.defaultClient()
             val request = InvokeRequest()
             val returnMessage = "Hello World"

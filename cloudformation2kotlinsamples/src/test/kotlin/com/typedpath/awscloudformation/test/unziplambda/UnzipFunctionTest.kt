@@ -7,7 +7,7 @@ import com.amazonaws.services.lambda.model.InvocationType
 import com.amazonaws.services.lambda.model.InvokeRequest
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.ObjectMetadata
-import com.typedpath.awscloudformation.test.test
+import com.typedpath.awscloudformation.test.util.createStack
 import org.junit.Assert
 import org.junit.Test
 import java.io.ByteArrayInputStream
@@ -94,15 +94,15 @@ class UnzipFunctionTest {
 
         val region = Regions.US_EAST_1
 
-        test(testTemplate, strStackName, region, false) { credentialsProvider, outputs ->
+        createStack(testTemplate, strStackName, region, false) { credentialsProvider, outputs ->
             println("""*********testing testing credentials $credentialsProvider*************""")
             try {
-                System.out.println("created stack - running unzip test!")
+                System.out.println("created stack - running unzip createStack!")
                 uploadUnzipDownload(credentialsProvider, region, testBucketName, functionName)
             } catch (e: Exception) {
                 e.printStackTrace()
                 error("" + e.message)
-                throw RuntimeException("failed unzip test", e)
+                throw RuntimeException("failed unzip createStack", e)
             }
         }
     }

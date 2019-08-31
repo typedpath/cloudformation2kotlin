@@ -4,11 +4,12 @@ import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.ObjectMetadata
-import com.typedpath.awscloudformation.test.defaultCredentialsProvider
-import com.typedpath.awscloudformation.test.defaultStackName
-import com.typedpath.awscloudformation.test.test
+import com.typedpath.awscloudformation.serverlessschema.ServerlessCloudformationTemplate
+import com.typedpath.awscloudformation.test.util.defaultCredentialsProvider
+import com.typedpath.awscloudformation.test.util.defaultStackName
+import com.typedpath.awscloudformation.test.util.createStack
 import com.typedpath.awscloudformation.test.withoutextension.getOrCreateTestArtifactS3BucketName
-import com.typedpath.awscloudformation.test.zipResourceDirectory
+import com.typedpath.awscloudformation.test.util.zipResourceDirectory
 import com.typedpath.awscloudformation.toYaml
 import org.apache.http.client.methods.HttpDelete
 import org.apache.http.client.methods.HttpGet
@@ -26,6 +27,11 @@ import java.util.*
 class ServerlessBackendApiTest {
 
     val region = Regions.US_EAST_1
+
+    val credentialsProvider = defaultCredentialsProvider()
+    val bucketName = getOrCreateTestArtifactS3BucketName(region, credentialsProvider)
+    val codePackageName = "codepackage_api_backend.zip"
+    var codeSourceUri = zipResourceDirectoryToS3(bucketName, codePackageName, credentialsProvider, "serverless/api_backend/src")
 
 
     fun testApi(baseUrl: String) {
@@ -60,40 +66,41 @@ class ServerlessBackendApiTest {
 
     }
 
-    fun addSource(bucketName: String, keyName: String,
-                  credentialsProvider: AWSCredentialsProvider, sourceDirectory: String) {
+    fun zipResourceDirectoryToS3(bucketName: String, keyName: String,
+                                 credentialsProvider: AWSCredentialsProvider, resourceDirectory: String) : String {
         val s3Client = AmazonS3ClientBuilder.standard()
                 .withCredentials(credentialsProvider)
                 .withRegion(region)
                 .build()
         // create a zip of the source and upload
-
         val baos = ByteArrayOutputStream()
-        zipResourceDirectory(sourceDirectory, baos)
+        zipResourceDirectory(resourceDirectory, baos)
         val metadata = ObjectMetadata()
         metadata.setContentType("application/blob")
         metadata.addUserMetadata("x-amz-meta-title", keyName)
         val inputStream = ByteArrayInputStream(baos.toByteArray())
         s3Client.putObject(bucketName, keyName, inputStream, metadata)
+        return "s3://$bucketName/$codePackageName"
     }
 
     @Test
     fun backendApi() {
+        backendApi(ServerlessBackendApiTemplate(codeSourceUri))
+    }
 
-        val credentialsProvider = defaultCredentialsProvider()
+    @Test
+    fun backendApiRefactored() {
+        backendApi(ServerlessBackendApiRefactoredTemplate(codeSourceUri))
+    }
 
-        val bucketName = getOrCreateTestArtifactS3BucketName(region, credentialsProvider)
-        val codePackageName = "codepackage_api_backend.zip"
+    fun backendApi(template: ServerlessCloudformationTemplate) {
 
-        addSource(bucketName, codePackageName, credentialsProvider, "serverless/api_backend/src")
-
-        val template = ServerlessBackendApiTemplate("s3://$bucketName/$codePackageName")
         val lambdaStackName = defaultStackName(template)
         println(toYaml(template))
 
-        test(template, lambdaStackName, region, false) { credentialsProvider, outputs ->
+        createStack(template, lambdaStackName, region, false) { credentialsProvider, outputs ->
             println("we made it !!")
-            Assert.assertTrue("outputs should be size 1 but was ${if (outputs==null) "null" else outputs.size.toString()}", outputs != null && outputs.size == 1)
+            Assert.assertTrue("outputs should be size 1 but was ${if (outputs == null) "null" else outputs.size.toString()}", outputs != null && outputs.size == 1)
             val output = outputs.get(0)
             println("${output.outputKey} => ${output.outputValue} ")
             Assert.assertEquals(output.outputKey, "ApiUrl")

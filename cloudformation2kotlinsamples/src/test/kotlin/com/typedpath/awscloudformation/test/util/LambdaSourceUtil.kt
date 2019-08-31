@@ -1,4 +1,4 @@
-package com.typedpath.awscloudformation.test
+package com.typedpath.awscloudformation.test.util
 
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.regions.Regions

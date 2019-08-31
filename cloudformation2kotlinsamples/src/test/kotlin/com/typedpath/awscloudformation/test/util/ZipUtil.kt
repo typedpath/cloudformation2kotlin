@@ -1,4 +1,4 @@
-package com.typedpath.awscloudformation.test
+package com.typedpath.awscloudformation.test.util
 
 import java.io.File
 import java.io.FileOutputStream
@@ -46,7 +46,7 @@ fun zipResourceDirectory(resourceDirectory: String, os: OutputStream) {
 
 fun main(args: Array<String>) {
 
-    val file =  File("./test.zip")
+    val file =  File("./createStack.zip")
     val resourceDir  = "serverless/basic/src"
     val fos = FileOutputStream(file);
 

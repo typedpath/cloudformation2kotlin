@@ -4,10 +4,9 @@ import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.typedpath.awscloudformation.test.s3.S3PublicReadableCloudFormationTemplate
-import com.typedpath.awscloudformation.test.test
+import com.typedpath.awscloudformation.test.util.createStack
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 import java.util.prefs.Preferences
 
 
@@ -31,8 +30,7 @@ fun getOrCreateTestArtifactS3BucketName(region: Regions, credentialsProvider : A
         val strDateTime = DateTimeFormatter.ofPattern("ddMMyyyy-HHmmss").format(LocalDateTime.now())
         val newBucketName = "$propertyName$strDateTime".toLowerCase()
         val s3Template = S3PublicReadableCloudFormationTemplate(newBucketName)
-        test(s3Template, newBucketName, region, false) {
-            credentialsProvider, outputs ->
+        createStack(s3Template, newBucketName, region, false) { credentialsProvider, outputs ->
             Preferences.userRoot().put(propertyName, newBucketName)
             existingBucketName = newBucketName
         }

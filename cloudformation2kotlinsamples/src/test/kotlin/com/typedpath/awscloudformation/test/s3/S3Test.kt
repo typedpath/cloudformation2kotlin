@@ -3,7 +3,7 @@ package com.typedpath.awscloudformation.test.s3
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.ObjectMetadata
-import com.typedpath.awscloudformation.test.test
+import com.typedpath.awscloudformation.test.util.createStack
 import org.junit.Assert
 import org.junit.Test
 import java.io.BufferedReader
@@ -30,7 +30,7 @@ class S3Test {
 
         val region = Regions.US_EAST_1
 
-        test(testTemplate, strStackName, region, false) { credentialsProvider, outputs ->
+        createStack(testTemplate, strStackName, region, false) { credentialsProvider, outputs ->
             println("""*********testing testing credentials $credentialsProvider*************""")
             try {
                 val s3Client = AmazonS3ClientBuilder.standard()
@@ -57,7 +57,7 @@ class S3Test {
 
             } catch (e: Exception) {
                 error("" + e.message)
-                throw RuntimeException("failed s3 test", e)
+                throw RuntimeException("failed s3 createStack", e)
             }
         }
     }

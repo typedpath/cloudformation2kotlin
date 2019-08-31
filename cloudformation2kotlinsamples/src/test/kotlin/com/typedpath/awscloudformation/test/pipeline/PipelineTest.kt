@@ -3,8 +3,8 @@ package com.typedpath.awscloudformation.test.pipeline
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.codecommit.AWSCodeCommitClientBuilder
 import com.amazonaws.services.codecommit.model.*
-import com.typedpath.awscloudformation.test.*
-import com.typedpath.awscloudformation.toYaml
+import com.typedpath.awscloudformation.test.util.createStack
+import com.typedpath.awscloudformation.test.util.defaultCredentialsProvider
 import org.junit.Test
 import java.nio.ByteBuffer
 import java.time.LocalDateTime
@@ -69,19 +69,19 @@ class PipelineTest {
 
         val region = Regions.US_EAST_1
 
-        test(testTemplate, strStackName, region, false) { credentialsProvider, outputs ->
+        createStack(testTemplate, strStackName, region, false) { credentialsProvider, outputs ->
             println("""*********testing testing credentials $credentialsProvider*************""")
             try {
                 // add files to the unzipcode source
                 // wait for build artifict
                 // wait for deployment
-                // test deployment
+                // createStack deployment
                 //
                 addSource(defaultReponame)
 
             } catch (e: Exception) {
                 error("" + e.message)
-                throw RuntimeException("failed s3 test", e)
+                throw RuntimeException("failed s3 createStack", e)
             }
         }
     }
@@ -90,7 +90,7 @@ class PipelineTest {
 
 fun main(args: Array<String>) {
     val repo = "testrepo26Jun19-120603"
-    //PipelineTest().addSource(repo)
+    //PipelineTest().zipResourceDirectoryToS3(repo)
     PipelineTest().pipeline()
     //println(toYaml(JavaLambdaTemplate("%functionName%", "%s3bucket%", "%s3key%", "example.Hello")))
 

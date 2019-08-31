@@ -7,7 +7,7 @@ cd cloudformation2kotlin
 gradle publishToMavenLocal
 </pre>
 This will take the aws json schema definitions (copied from https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-resource-specification.html) convert them to kotlin and bundle them into a maven artifact along with some helper code. Currently not all the schemas are converted - only a subset in directory cloudformation2kotlin/**/us-east1_active/
-It also includes some classes create manually because I can find a schema definition for them e.g. IamPolicy and serverless resources such as   
+It also includes some classes create manually because I can find a schema definition for them e.g. IamPolicy and serverless resources such as __AWS::Serverless::Function__  
 
 ## Running tests
 make sure the default aws user in ~/.aws has admin permissions!
@@ -24,8 +24,7 @@ This will run the junit tests, creating cloud cloudformation stacks from (kotlin
 | UnzipFunctionTest.kt | UnzipS3FunctionTemplate.kt | create a stack with an s3 bucket and an unzipping lambda function, upload a zip file and unzip it with the lambda function |
 | PipelineTest.kt | PipelineCloudFormationTemplate.kt | create stack with 4 stage pipeline + code repository, checkin code and test lambda created by pipeline |
 | LambdaServerlessTest.kt | LambdaServerlessTemplate.kt | create a SAM stack containing a lambda and call the lambda |
-| ServerlessBackendApiTest.kt | ServerlessBackendApiTemplate.kt | create a SAM stack implementing a REST api with API gateway, lambda functions and dynamo db.  Test with http put, get and delete calls   |
-
+| ServerlessBackendApiTest.kt | ServerlessBackendApiTemplate.kt, ServerlessBackendApiRefactoredTemplate.kt ( templates functionally equivalent)  | create a SAM stack implementing a REST api with API gateway, lambda functions and dynamo db.  Test with http put, get and delete calls   |
 
 ## Templates
 The examples listed above create templates by extension e.g.:
