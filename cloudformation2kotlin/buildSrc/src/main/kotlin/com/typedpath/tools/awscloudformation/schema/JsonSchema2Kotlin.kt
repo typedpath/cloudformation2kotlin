@@ -8,32 +8,45 @@ import java.util.stream.Collectors
 fun main(args: Array<String>) {
     val rootPath = "./buildSrc"
     val destinationRootPath = "./generated/source/kotlin"
-    val includes = asList("**/sample/S3BucketSpecification.json")
-    transformDirectory(rootPath, includes, destinationRootPath, "com.typedpath.yy")
+//    val includes = asList("**/us-east1_active/RdsDbClusterSpecification.json")
+    val includes = asList("**/us-east1/ApiGatewayV2IntegrationSpecification.json")
+    val excludes = asList("**/us-east1/CloudFormationResourceSpecification.json")
+    transformDirectory(rootPath, includes, excludes, destinationRootPath, "com.typedpath.yy")
 }
 
-fun transformDirectory(rootPath: String, strIncludes: List<String>, destinationDir: String, strPackage: String) {
+fun transformDirectory(rootPath: String, strIncludes: List<String>, strExcludes: List<String>, destinationDir: String, strPackage: String) {
     println(
 """******$rootPath $strIncludes
     =>  $destinationDir::$strPackage""".trimMargin())
     val pRootPath = Paths.get(rootPath)
     println("******* rootPath = ${pRootPath.toFile().absolutePath}" )
-    val filter = toFileFilter(strIncludes)
+    val filter = toFileFilter(strIncludes, strExcludes)
     transformDirectory(pRootPath, Paths.get(destinationDir), strPackage, filter)
 }
 
-private fun toFileFilter(strIncludes: List<String>) : (File)->Boolean {
+private fun toFileFilter(strIncludes: List<String>, strExcludes: List<String>) : (File)->Boolean {
     val actualIncludes =
     if (strIncludes.isEmpty()) {
         listOf("**/*.json")
     } else {
         strIncludes
     }
+    val actualExcludes =
+        if (strExcludes.isEmpty()) {
+            listOf()
+        } else {
+            strExcludes
+        }
     val sourceIncludes = actualIncludes.stream().map({ f -> pathMatcher(f) }).collect(
         Collectors.toList<PathMatcher>()
     )
+    val sourceExcludes = actualExcludes.stream().map({ f -> pathMatcher(f) }).collect(
+        Collectors.toList<PathMatcher>()
+    )
     return {f :File ->
-        sourceIncludes.any { p->p.matches(f.toPath()) }
+        println("""${f.name} include=${sourceIncludes.any { p->p.matches(f.toPath()) }} exclude==${sourceExcludes.any { p->p.matches(f.toPath())}}""")
+
+        sourceIncludes.any { p->p.matches(f.toPath()) } && !sourceExcludes.any { p->p.matches(f.toPath()) }
     }
 }
 
@@ -67,9 +80,7 @@ private fun copy(from: Path, to: Path) {
 private fun process(jsonFile: File, destinationRootPath: Path, strPackage: String) {
     val text = jsonFile.readText()
     println("**** ${jsonFile.name} / ${jsonFile.absolutePath}")
-    //println("starts with: " + text.substring(0, 100))
     val (simpleClassname, src) = jsonSchemaString2Kotlin(text, strPackage)
-    //println(src)
     val destination = "${strPackage.replace('.', File.separatorChar )}${File.separatorChar}$simpleClassname.kt"
     val fullDestination = destinationRootPath.resolve(destination)
     println("destination:${fullDestination.toFile().absoluteFile.absolutePath}")

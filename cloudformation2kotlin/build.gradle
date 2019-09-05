@@ -28,11 +28,14 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
+//["**/us-east1_active/*.json"],
+
+
 compileKotlin {
     doFirst {
         println("********************")
         JsonSchema2KotlinKt.transformDirectory("${projectDir}",
-                ["**/us-east1_active/*.json"],
+                ["**/us-east1/*.json"], ["**/us-east1/CloudFormationResourceSpecification.json"],
                 "${buildDir.absolutePath}/generated/source/kotlin/", "com.typedpath.awscloudformation.schema")
     }
     kotlinOptions.jvmTarget = "1.8"

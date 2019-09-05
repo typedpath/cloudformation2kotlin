@@ -7,7 +7,7 @@ import com.typedpath.awscloudformation.CloudFormationTemplate
 //https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#resource-types
 class AWS_Serverless_Function(  val handler: String,
                                 val runtime: String): ServerlessResource () {
-    override fun getResourceType() = "AWS::Serverless::Function"
+    override fun getResourceType_() = "AWS::Serverless::Function"
     var functionName : String? = null
     // Properties:
     var codeUri: String? = null
@@ -47,7 +47,7 @@ class AWS_Serverless_Function(  val handler: String,
 
     //https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
     class ApiEvent(val path: String, val method: String) : ServerlessEvent() {
-        override fun getResourceType() = "Api"
+        override fun getResourceType_() = "Api"
     }
 
     val events = HashMap<String, ServerlessEvent>()
@@ -57,7 +57,7 @@ class AWS_Serverless_Function(  val handler: String,
     fun arnAttribute() = Attribute(this, "Arn");
 
     class Environment() {
-        fun getResourceType() = "AWS::Lambda::Function.Environment"
+        fun getResourceType_() = "AWS::Lambda::Function.Environment"
         // Properties:
         var variables: MutableMap<String, String> = mutableMapOf()
     }

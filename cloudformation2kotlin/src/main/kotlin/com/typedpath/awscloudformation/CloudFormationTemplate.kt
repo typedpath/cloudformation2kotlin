@@ -65,7 +65,7 @@ open class CloudFormationTemplate {
   }
 
   class StaticResource(val name: String) : Resource() {
-    override fun getResourceType(): String = name
+    override fun getResourceType_(): String = name
   }
 
   fun refStatic(name: String): String {
@@ -167,7 +167,7 @@ $js""".trimIndent())
     } else if (obj is Resource) {
       val entries = resources.filter { entry -> entry.value == obj }.map { entry2 -> entry2.key }
       val resourceName =
-        if (entries.size == 0) obj.getResourceType()
+        if (entries.size == 0) obj.getResourceType_()
         else entries.get(0)
         TemplateReference(resourceName)
     } else if (obj is Parameter) {

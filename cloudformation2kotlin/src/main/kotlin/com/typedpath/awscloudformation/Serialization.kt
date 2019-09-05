@@ -61,7 +61,7 @@ private fun toJsCompatibleComplex(value: Any, dereferencer: CloudFormationTempla
   var propertyContainer: MutableMap<String, Any> = result
 
   if (value is Resource) {
-    result.put("Type", toJsSimpleValue(value.getResourceType()))
+    result.put("Type", toJsSimpleValue(value.getResourceType_()))
     if (value.deletionPolicy != null) {
       result.put("DeletionPolicy", toJsSimpleValue(value.deletionPolicy!!))
     }

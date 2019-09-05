@@ -5,11 +5,11 @@ import java.util.*
 import java.util.Arrays.asList
 
 val IamPolicyQualifiedClassName = "com.typedpath.awscloudformation.IamPolicy"
+val UntypedJsonQualifiedClassName = "Any"
 val PipelineStageActionConfigurationQualifiedClassName="com.typedpath.awscloudformation.schema.PipelineStageActionConfiguration"
 val ResourceQualifiedClassName = "com.typedpath.awscloudformation.Resource"
 
 fun jsonSchemaString2Kotlin(strJsonSchema: String, strPackage: String): Pair<String, String> {
-
 
   val jsonSchema: ScriptObjectMirror = stringToJson(strJsonSchema)
   val resourceTypeJson = jsonSchema["ResourceType"]
@@ -68,6 +68,16 @@ private fun propertySpec(
   if ("Integer".equals(primitiveItemType)) {
     primitiveItemType = "Int"
   }
+  //TODO eliminate this by resolving all json schemas
+  if ("Json".equals(primitiveType)) {
+    primitiveType = UntypedJsonQualifiedClassName
+  }
+  if ("Map".equals(primitiveType)) {
+    primitiveType = "Map<Any,Any>"
+  }
+  if ("Json".equals(primitiveItemType)) {
+    primitiveItemType = UntypedJsonQualifiedClassName
+  }
   //TODO remove this
   if (parentType.endsWith("ActionDeclaration") && name.equals("configuration")) {
     type = PipelineStageActionConfigurationQualifiedClassName
@@ -85,7 +95,7 @@ private fun propertySpec(
   return "$name: $typeSpec"
 }
 
-private fun camelCase(str: String) = "${str.substring(0, 1).toLowerCase()}${str.substring(1)}"
+private fun camelCase(str: String) = "${str.substring(0, 1).toLowerCase()}${str.replace(".", "").substring(1)}"
 
 private class PropertyEntry(val key: String, val value: ScriptObjectMirror) {
   fun name(): String {
@@ -115,10 +125,6 @@ private fun jsonSchema2Kotlin(
   innerClassSpecs: List<Map.Entry<String, ScriptObjectMirror>>, isRoot: Boolean = true
 ): Pair<String, String> {
   println("jsonSchema2Kotlin processing $resourceName")
-  // val resourceTypeJson = jsonSchema["ResourceType"]
-  // if (resourceTypeJson == null || resourceTypeJson !is ScriptObjectMirror)
-  //throw throw RuntimeException("no ResourceType map found in $jsonSchema")
-  // if (resourceTypeJson.size != 1) throw RuntimeException("expected ResourceType size 1 but was ${resourceTypeJson.size}")
   var className = resourceName.replace("::", "_")
   val lastDotIndex = className.lastIndexOf('.')
   if (lastDotIndex > 0) {
@@ -154,7 +160,7 @@ class $className(${
   val ${propertySpec(resourceName, it.name(), it.value)}"""
   }
   })${if (isRoot) """: ${ResourceQualifiedClassName} () """ else ""} {
-  ${if (isRoot) "override" else ""} fun getResourceType() = "$resourceName"
+  ${if (isRoot) "override" else ""} fun getResourceType_() = "$resourceName"
   // Properties:${
   mutableProperties.joinToString("") {
     """

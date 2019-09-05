@@ -1,7 +1,7 @@
 package com.typedpath.awscloudformation
 
 abstract class Resource {
-    abstract fun getResourceType() : String
+    abstract fun getResourceType_() : String
 
     enum class DeletionPolicyValue {Delete}
 
