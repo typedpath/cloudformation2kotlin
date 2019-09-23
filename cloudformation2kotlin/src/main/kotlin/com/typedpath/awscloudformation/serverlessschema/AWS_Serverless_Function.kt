@@ -1,6 +1,8 @@
 package com.typedpath.awscloudformation.serverlessschema
 
 import com.typedpath.awscloudformation.CloudFormationTemplate
+import com.typedpath.awscloudformation.IamPolicy
+import com.typedpath.awscloudformation.schema.AWS_S3_Bucket
 
 //TODO ref sam_resources.py
 // https://github.com/softprops/typed-lambda/tree/master/events
@@ -16,7 +18,7 @@ class AWS_Serverless_Function(  val handler: String,
     var memorySize: Int? = null
     var timeout: Int? = null
     var role: String? = null
-    var policies =  HashMap<String, Any>()
+    var policies : Any? = null
     var environment: Environment? = null
 
     fun environment(key: String, value: String) {
@@ -26,14 +28,22 @@ class AWS_Serverless_Function(  val handler: String,
         environment!!.variables.put(key, value)
     }
 
-    fun policy(builtInPolicyName: String) {
+    fun policy(value: IamPolicy) {
+         policies = value
+    }
 
+    fun policy(value: List<IamPolicy>) {
+        policies = value
     }
 
     fun policy(serverlessPolicy: ServerlessPolicy) {
-        policies.put(serverlessPolicy.javaClass.simpleName, serverlessPolicy)
+        if (policies == null) {
+            policies = HashMap<String, ServerlessPolicy>()
+        }
+        (policies as HashMap<String, ServerlessPolicy>).put(serverlessPolicy.javaClass.simpleName, serverlessPolicy)
     }
 
+    //full list here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
     abstract class ServerlessPolicy
     class DynamoDBReadPolicy(tableIn: AWS_Serverless_SimpleTable, parent: CloudFormationTemplate) : ServerlessPolicy() {
          val tableName = parent.ref(tableIn)
@@ -41,13 +51,25 @@ class AWS_Serverless_Function(  val handler: String,
     class DynamoDBCrudPolicy(tableIn: AWS_Serverless_SimpleTable, parent: CloudFormationTemplate) : ServerlessPolicy() {
         val tableName = parent.ref(tableIn)
     }
-
+    class S3CrudPolicy(bucketNameIn: String,  parent: CloudFormationTemplate) : ServerlessPolicy() {
+        val bucketName = parent.sub(bucketNameIn)
+    }
+    class S3FullAccessPolicy(bucketNameIn: String,  parent: CloudFormationTemplate) : ServerlessPolicy() {
+        val bucketName = parent.sub(bucketNameIn)
+    }
 
     abstract class ServerlessEvent : ServerlessResource()
 
     //https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
     class ApiEvent(val path: String, val method: String) : ServerlessEvent() {
         override fun getResourceType_() = "Api"
+    }
+
+    class S3Event(bucketIn: AWS_S3_Bucket, parent: CloudFormationTemplate) : ServerlessEvent() {
+        override fun getResourceType_() = "S3"
+        val bucket = parent.ref(bucketIn)
+        val events : MutableList<String> = mutableListOf()
+        fun event(strEvent: String) = events.add(strEvent)
     }
 
     val events = HashMap<String, ServerlessEvent>()

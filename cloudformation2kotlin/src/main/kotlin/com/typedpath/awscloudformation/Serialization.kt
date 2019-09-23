@@ -50,6 +50,9 @@ private fun toJsCompatibleComplex(value: Any, dereferencer: CloudFormationTempla
   val propertiesClass = if (value is CloudFormationTemplate)
     CloudFormationTemplate::class.java else value.javaClass
 
+  val ktmp = propertiesClass.kotlin.memberProperties
+  val jtmp = propertiesClass.javaClass.declaredFields
+
   val properties = propertiesClass.kotlin.memberProperties
     .map { p -> p as KProperty1<*,*> }
     .filter { p ->
@@ -129,7 +132,11 @@ private fun toJsSimpleValue(
   var printValue =
     if (value is ParameterType) {
       value.awsTypeName
-    } else "'${value}'"
+    } else if (value is Number) {
+      "$value"
+    }
+
+    else "'${value}'"
   return printValue
 }
 

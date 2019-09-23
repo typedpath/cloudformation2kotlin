@@ -38,6 +38,7 @@ class ServerlessTest {
              codeUri="src/"
              policy(AWS_Serverless_Function.DynamoDBReadPolicy(table, this@BackendApiTemplate))
              event("GetResource", AWS_Serverless_Function.ApiEvent("/resource/{resourceId}","get"))
+            timeout = 21
         }
 
         val putFunction = AWS_Serverless_Function("index.put", LambdaRuntime.NodeJs810.id).apply {
@@ -45,6 +46,7 @@ class ServerlessTest {
             policy(AWS_Serverless_Function.DynamoDBCrudPolicy(table, this@BackendApiTemplate))
             event("PutResource", AWS_Serverless_Function.ApiEvent("/resource/{resourceId}","put"))
             environment("TABLE_NAME", this@BackendApiTemplate.ref(table))
+            timeout = 20
         }
 
         val apiUrlRef = sub("https://\${ServerlessRestApi}.execute-api.\${AWS::Region}.amazonaws.com/Prod/resource/")
