@@ -6,8 +6,8 @@ This project offers a Kotlin DSL for AWS cloudformation. Kotlin brings the advan
 cd cloudformation2kotlin
 gradle publishToMavenLocal
 </pre>
-This will take the aws json schema definitions (copied from https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-resource-specification.html) convert them to kotlin and bundle them into a maven artifact along with some helper code. Currently not all the schemas are converted - only a subset in directory cloudformation2kotlin/**/us-east1_active/
-It also includes some classes create manually because I can find a schema definition for them e.g. IamPolicy and serverless resources such as __AWS::Serverless::Function__  
+This will take the aws json schema definitions (copied from https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-resource-specification.html) convert them to kotlin and bundle them into a maven artifact along with some helper code. 
+It also includes some classes create manually because I cant find a schema definition for them e.g. __IamPolicy__ and serverless resources such as __AWS::Serverless::Function__.  There are also some properties that are mapped to __Any?__ because I havent mapped the schema manually yet.  
 
 ## Running tests
 make sure the default aws user in ~/.aws has admin permissions!
