@@ -12,6 +12,7 @@ It also includes some classes create manually because I can find a schema defini
 ## Running tests
 make sure the default aws user in ~/.aws has admin permissions!
 <pre>cd cloudformationsamples
+gradle clean build -x test
 gradle build
 </pre>
 This will run the junit tests, creating cloud cloudformation stacks from (kotlin) templates and testing the resources in the created stacks. These are the tests: 
@@ -25,6 +26,7 @@ This will run the junit tests, creating cloud cloudformation stacks from (kotlin
 | PipelineTest.kt | PipelineCloudFormationTemplate.kt | create stack with 4 stage pipeline + code repository, checkin code and test lambda created by pipeline |
 | LambdaServerlessTest.kt | LambdaServerlessTemplate.kt | create a SAM stack containing a lambda and call the lambda |
 | ServerlessBackendApiTest.kt | ServerlessBackendApiTemplate.kt, ServerlessBackendApiRefactoredTemplate.kt ( templates functionally equivalent)  | create a SAM stack implementing a REST api with API gateway, lambda functions and dynamo db.  Test with http put, get and delete calls   |
+|S3ObjectCreatedEventTest.kt| S3ObjectCreatedEventTemplate | create a SAM stack containing an s3 bucket with lambda triggered by object create events. The lambda code is in a seperate kotlin project "lambdas/s3objectcreated" and adds a tag on creation. Write to the s3 bucket and check the tag has been created.  |
 
 ## Templates
 The examples listed above create templates by extension e.g.:
