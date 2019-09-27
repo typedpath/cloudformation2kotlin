@@ -123,9 +123,12 @@ fun createStack(template: CloudFormationTemplate, stackName: String, region: Reg
 
 fun defaultCurrentDateTimePattern() = "${(DateTimeFormatter.ofPattern("ddMMMyy-HHmmss")).format(LocalDateTime.now()).toLowerCase()}"
 
-fun defaultStackName(cloudFormationTemplate: CloudFormationTemplate): String =
-        "${cloudFormationTemplate.javaClass.name.toLowerCase().replace('.', '-')
+fun defaultStackName(cloudFormationTemplateClass: Class<*>): String =
+        "${cloudFormationTemplateClass.name.toLowerCase().replace('.', '-')
                 .replace('$', '-')}-${defaultCurrentDateTimePattern()}"
+
+fun defaultStackName(cloudFormationTemplate: CloudFormationTemplate): String = defaultStackName(cloudFormationTemplate.javaClass)
+
 
 
 // Wait for a stack to complete transitioning
