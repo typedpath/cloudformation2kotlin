@@ -3,6 +3,8 @@ package com.typedpath.awscloudformation.test.s3
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.ObjectMetadata
+import com.typedpath.awscloudformation.CloudFormationTemplate
+import com.typedpath.awscloudformation.test.TemplateFactory
 import com.typedpath.awscloudformation.test.util.createStack
 import org.junit.Assert
 import org.junit.Test
@@ -15,17 +17,24 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-class S3Test {
+class S3Test : TemplateFactory{
+
+    val strDateTime = DateTimeFormatter.ofPattern("ddMMyyyy-HHmmss").format(LocalDateTime.now())
+    val bucketName = """s3publicreadabletest-$strDateTime"""
+
+
+    override fun createTemplate() : CloudFormationTemplate {
+        val strDateTime = DateTimeFormatter.ofPattern("ddMMyyyy-HHmmss").format(LocalDateTime.now())
+        val bucketName = """s3publicreadabletest-$strDateTime"""
+        return  S3PublicReadableCloudFormationTemplate(bucketName)
+    }
 
     private fun readLine(url: URL): String = (BufferedReader(InputStreamReader(url.openStream()))).readLine()
 
     @Test
     fun publicBucket() {
 
-        val strDateTime = DateTimeFormatter.ofPattern("ddMMyyyy-HHmmss").format(LocalDateTime.now())
-        val bucketName = """s3publicreadabletest-$strDateTime"""
-
-        val testTemplate = S3PublicReadableCloudFormationTemplate(bucketName)
+        val testTemplate = createTemplate()
         val strStackName = """s3testStack$strDateTime"""
 
         val region = Regions.US_EAST_1

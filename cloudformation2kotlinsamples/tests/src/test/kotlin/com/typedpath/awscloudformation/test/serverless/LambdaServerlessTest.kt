@@ -4,6 +4,9 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.lambda.AWSLambdaClientBuilder
 import com.amazonaws.services.lambda.model.InvocationType
 import com.amazonaws.services.lambda.model.InvokeRequest
+import com.typedpath.awscloudformation.CloudFormationTemplate
+import com.typedpath.awscloudformation.test.TemplateFactory
+import com.typedpath.awscloudformation.test.pipeline.PipelineCloudFormationTemplate
 import com.typedpath.awscloudformation.test.util.addSource
 import com.typedpath.awscloudformation.test.util.createStack
 import com.typedpath.awscloudformation.test.util.defaultCredentialsProvider
@@ -18,25 +21,26 @@ import java.time.format.DateTimeFormatter
 import java.nio.ByteBuffer
 
 
-class LambdaServerlessTest {
+class LambdaServerlessTest : TemplateFactory {
 
     val region = Regions.US_EAST_1
+    val strDateTime = (DateTimeFormatter.ofPattern("ddMMMyy-HHmmss")).format(LocalDateTime.now()).toLowerCase()
+    val credentialsProvider = defaultCredentialsProvider()
+    val bucketName =   getOrCreateTestArtifactS3BucketName(region, credentialsProvider) //"$name$strDateTime"
+    val functionName = "f${this.javaClass.simpleName}$strDateTime"
+    val codePackageName = "codepackage.zip"
+
+
+    override fun createTemplate(): CloudFormationTemplate {
+        return  LambdaServerlessTemplate("s3://$bucketName/$codePackageName", functionName)
+    }
 
     // reimplements this https://github.com/awslabs/serverless-application-model/blob/master/examples/2016-10-31/hello_world/template.yaml
     @Test
     fun basic() {
-
-        val strDateTime = (DateTimeFormatter.ofPattern("ddMMMyy-HHmmss")).format(LocalDateTime.now()).toLowerCase()
-
-        val credentialsProvider = defaultCredentialsProvider()
-
-        val bucketName =   getOrCreateTestArtifactS3BucketName(region, credentialsProvider) //"$name$strDateTime"
-        val codePackageName = "codepackage.zip"
-
         addSource(bucketName, codePackageName, credentialsProvider, "serverless/basic/src", region)
 
-        val functionName = "f${this.javaClass.simpleName}$strDateTime"
-        val lambdaTemplate = LambdaServerlessTemplate("s3://$bucketName/$codePackageName", functionName)
+        val lambdaTemplate = createTemplate()
         val lambdaStackName = defaultStackName(lambdaTemplate)
         println(toYaml(lambdaTemplate))
 

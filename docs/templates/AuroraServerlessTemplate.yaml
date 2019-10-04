@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Outputs:
+  databaseArn:
+    Description: 'the db arn'
+    Value:
+      !Join
+        - ':'
+        - - 'arn:aws:rds'
+          - !Ref AWS::Region
+          - !Ref AWS::AccountId
+          - 'cluster'
+          - !Ref db
+
+  dbClusterIdentifier:
+    Description: 'the dbClusterIdentifier'
+    Value: !Ref db
+  secretArn:
+    Description: 'the secrets arn'
+    Value: !Ref dbSecret
+Resources:
+  db:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      DatabaseName: 'testdb04oct19235803'
+      Engine: 'aurora'
+      EngineMode: 'serverless'
+      EngineVersion: '5.6.10a'
+      MasterUserPassword:
+        !Join
+          - ''
+          - - '{{resolve:secretsmanager:'
+            - !Ref dbSecret
+            - ':SecretString:password}}'
+
+      MasterUsername:
+        !Join
+          - ''
+          - - '{{resolve:secretsmanager:'
+            - !Ref dbSecret
+            - ':SecretString:username}}'
+
+      ScalingConfiguration:
+        AutoPause: 'true'
+        MaxCapacity: 4
+        MinCapacity: 1
+        SecondsUntilAutoPause: 900
+  dbSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Description: 'RDS database auto-generated user password'
+      GenerateSecretString:
+        ExcludeCharacters: '"@/\'
+        GenerateStringKey: 'password'
+        PasswordLength: 30
+        SecretStringTemplate: '{"username": "admin"}'
+      Name: 'testdb04oct19235803-AuroraUserSecret'
+      Tags:
+        - Key: 'test'
+          Value: 'test testdb04oct19235803'
+
+Transform: 'AWS::Serverless-2016-10-31'

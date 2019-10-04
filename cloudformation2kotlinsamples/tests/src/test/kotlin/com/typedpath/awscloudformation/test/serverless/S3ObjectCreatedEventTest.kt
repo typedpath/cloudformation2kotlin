@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.model.GetObjectTaggingRequest
 import com.amazonaws.services.s3.model.GetObjectTaggingResult
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.model.Tag
+import com.typedpath.awscloudformation.test.TemplateFactory
 import com.typedpath.awscloudformation.test.uploadBlobToS3
 import com.typedpath.awscloudformation.test.util.createStack
 import com.typedpath.awscloudformation.test.util.defaultCredentialsProvider
@@ -65,11 +66,9 @@ fun uploadFileCheckTag(bucketName: String, credentialsProvider: AWSCredentialsPr
         error("" + e.message)
         throw RuntimeException("failed s3 createStack", e)
     }
-
 }
 
-
-class S3ObjectCreatedEventTest {
+class S3ObjectCreatedEventTest : TemplateFactory {
     val region = Regions.US_EAST_1
 
     val credentialsProvider = defaultCredentialsProvider()
@@ -77,8 +76,15 @@ class S3ObjectCreatedEventTest {
     //val codePackageName = "codepackage_api_backend.zip"
     val codeRelativeLocation = "lambdas/s3objectcreated/build/libs/s3objectcreated-fat-testonly.jar"
 
-    var codeSourceUri = uploadCodeToS3("../$codeRelativeLocation"
-            , region, codeBucketName, codeRelativeLocation, credentialsProvider)
+    //this value is for auto documentation only
+    var codeSourceUri = "s3://serverless-testutils-artifact-bucket-us-east-1sample/lambdas/example/example.jar"
+
+    val bucketNamePrefix = defaultCurrentDateTimePattern() + "s3createEventTest"
+
+    override fun createTemplate(): S3ObjectCreatedEventTemplate {
+        return  S3ObjectCreatedEventTemplate(codeSourceUri, "test" + bucketNamePrefix)
+    }
+
 
     fun uploadCodeToS3(strFile: String, region: Regions, bucketName: String, bucketKey: String, credentialsProvider: AWSCredentialsProvider): String {
         val path = Paths.get(strFile)
@@ -93,8 +99,10 @@ class S3ObjectCreatedEventTest {
     @Test
     fun objectCreated() {
 
-        val bucketNamePrefix = defaultCurrentDateTimePattern() + "s3createEventTest"
-        val template = S3ObjectCreatedEventTemplate(codeSourceUri, "test" + bucketNamePrefix)
+        codeSourceUri = uploadCodeToS3("../$codeRelativeLocation"
+                , region, codeBucketName, codeRelativeLocation, credentialsProvider)
+
+        val template = createTemplate()
         val lambdaStackName = defaultStackName(template)
         println(toYaml(template))
 
@@ -104,8 +112,6 @@ class S3ObjectCreatedEventTest {
             uploadFileCheckTag(bucketName, credentialsProvider, region)
         }
     }
-
-
 }
 
 

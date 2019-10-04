@@ -9,6 +9,8 @@ import com.typedpath.awscloudformation.toYaml
 import org.junit.Test
 import com.amazonaws.services.rdsdata.model.ExecuteStatementRequest
 import com.amazonaws.services.rdsdata.AWSRDSDataClient
+import com.typedpath.awscloudformation.serverlessschema.ServerlessCloudformationTemplate
+import com.typedpath.awscloudformation.test.TemplateFactory
 import org.junit.Assert
 import java.lang.RuntimeException
 
@@ -17,20 +19,6 @@ private fun enableHttpEndpoint(region: Regions, credentials: AWSCredentialsProvi
     val client = AmazonRDSClientBuilder.standard().withRegion(region)
             .withCredentials(credentials).build()
 
-    /*try {
-        client.modifyDBCluster(ModifyDBClusterRequest()
-                .withDBClusterIdentifier(dbClusterIdentifier)
-                .withEnableHttpEndpoint(true))
-    } catch (ex: Exception) {
-        println("enableHttpEndpoint failed retrying $region $dbClusterIdentifier")
-        try {
-            Thread.sleep(2)
-        } catch (ex2: Exception) {
-        }
-        client.modifyDBCluster(ModifyDBClusterRequest()
-                .withDBClusterIdentifier(dbClusterIdentifier)
-                .withEnableHttpEndpoint(true))
-    }*/
     client.modifyDBCluster(ModifyDBClusterRequest()
             .withDBClusterIdentifier(dbClusterIdentifier)
             .withEnableHttpEndpoint(true))
@@ -66,18 +54,22 @@ private fun testDb(secretUrn: String, dbClusterUrn: String, dbName: String) {
     Assert.assertEquals(testValue, returnedValue)
 }
 
-class AuroraServerlessTest {
+class AuroraServerlessTest : TemplateFactory{
 
     val region = Regions.US_EAST_1
+    val dbName = "testdb${defaultCurrentDateTimePattern().replace("-", "")}"
 
     // based on this https://aws.amazon.com/blogs/database/using-the-data-api-to-interact-with-an-amazon-aurora-serverless-mysql-database/
 
-    @Test
+    override fun createTemplate(): ServerlessCloudformationTemplate {
+        return AuroraServerlessTemplate(dbName, "admin")
+    }
+
+        @Test
     fun db() {
 
-        val dbName = "testdb${defaultCurrentDateTimePattern().replace("-", "")}"
         val stackName = defaultStackName(AuroraServerlessTemplate::class.java)
-        val template = AuroraServerlessTemplate(dbName, "admin")
+        val template = createTemplate()
         println(toYaml(template))
 
         createStack(template, stackName, region, false) { credentialsProvider, outputs ->

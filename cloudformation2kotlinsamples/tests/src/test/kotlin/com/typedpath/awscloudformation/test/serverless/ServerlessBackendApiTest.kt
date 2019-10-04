@@ -4,7 +4,9 @@ import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.ObjectMetadata
+import com.typedpath.awscloudformation.CloudFormationTemplate
 import com.typedpath.awscloudformation.serverlessschema.ServerlessCloudformationTemplate
+import com.typedpath.awscloudformation.test.TemplateFactory
 import com.typedpath.awscloudformation.test.util.defaultCredentialsProvider
 import com.typedpath.awscloudformation.test.util.defaultStackName
 import com.typedpath.awscloudformation.test.util.createStack
@@ -26,7 +28,7 @@ import java.io.InputStream
 import java.util.*
 
 // reimplements and tests this https://github.com/awslabs/serverless-application-model/tree/master/examples/2016-10-31/api_backend
-class ServerlessBackendApiTest {
+class ServerlessBackendApiTest : TemplateFactory {
 
     val region = Regions.US_EAST_1
 
@@ -35,6 +37,9 @@ class ServerlessBackendApiTest {
     val codePackageName = "codepackage_api_backend.zip"
     var codeSourceUri = zipResourceDirectoryToS3(region, bucketName, codePackageName, credentialsProvider, "serverless/api_backend/src")
 
+    override fun createTemplate(): ServerlessCloudformationTemplate {
+        return  ServerlessBackendApiTemplate(codeSourceUri)
+    }
 
     fun testApi(baseUrl: String) {
         val resourceId = UUID.randomUUID()
@@ -68,10 +73,9 @@ class ServerlessBackendApiTest {
 
     }
 
-
     @Test
     fun backendApi() {
-        backendApi(ServerlessBackendApiTemplate(codeSourceUri))
+        backendApi(createTemplate())
     }
 
     @Test

@@ -1,0 +1,11 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  HellowWorldFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: 's3://serverless-testutils-artifact-bucket-us-east-128082019-151241/codepackage.zip'
+      Description: 'A Hello World Test'
+      FunctionName: 'fLambdaServerlessTest04oct19-223237'
+      Handler: 'index.handler'
+      Runtime: 'nodejs8.10'
+Transform: 'AWS::Serverless-2016-10-31'

@@ -3,6 +3,8 @@ package com.typedpath.awscloudformation.test.pipeline
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.codecommit.AWSCodeCommitClientBuilder
 import com.amazonaws.services.codecommit.model.*
+import com.typedpath.awscloudformation.CloudFormationTemplate
+import com.typedpath.awscloudformation.test.TemplateFactory
 import com.typedpath.awscloudformation.test.util.createStack
 import com.typedpath.awscloudformation.test.util.defaultCredentialsProvider
 import org.junit.Test
@@ -16,10 +18,17 @@ import java.time.format.DateTimeFormatter
  *  In order to test it adds code for a testUnzip function to the created repository and waits for the pipeline
  *  to deploy it. TODO Then calls the testUnzip to check the deployment worked.
  */
-class PipelineTest {
+class PipelineTest : TemplateFactory {
 
     val targetCloudFormationTemplateFilename = "cloudFormationTemplate.yml"
     val codePackageFilename = "lambda-java-example-1.0-SNAPSHOT.jar"
+    val strDateTime = (DateTimeFormatter.ofPattern("ddMMMyy-HHmmss")).format(LocalDateTime.now())
+    val defaultReponame = "testrepo$strDateTime"
+
+    override fun createTemplate(): CloudFormationTemplate {
+        return PipelineCloudFormationTemplate(defaultReponame, targetCloudFormationTemplateFilename, codePackageFilename)
+    }
+
 
     fun addSource(repoName: String) {
 
@@ -44,32 +53,27 @@ class PipelineTest {
         addfile(Hellojava, "src/main/java/example/Hello.java")
         addfile(cloudFormationTemplate, targetCloudFormationTemplateFilename)
 
-        var branch:GetBranchResult
+        var branch: GetBranchResult
         //if there is a branch set the parentCommitId
         try {
             val getBranchRequest = GetBranchRequest()
             getBranchRequest.branchName = "master"
             getBranchRequest.repositoryName = repoName
             branch = client.getBranch(getBranchRequest)
-            createCommitRequest.parentCommitId=branch.branch.commitId
+            createCommitRequest.parentCommitId = branch.branch.commitId
         } catch (be: BranchDoesNotExistException) {
         }
         client.createCommit(createCommitRequest)
-        }
+    }
 
     @Test
     fun pipeline() {
 
-        val strDateTime = (DateTimeFormatter.ofPattern("ddMMMyy-HHmmss")).format(LocalDateTime.now())
-
-        val defaultReponame = "testrepo$strDateTime"
-
-        val testTemplate = PipelineCloudFormationTemplate(defaultReponame, targetCloudFormationTemplateFilename, codePackageFilename)
         val strStackName = """pipelineTestStack$strDateTime"""
 
         val region = Regions.US_EAST_1
 
-        createStack(testTemplate, strStackName, region, false) { credentialsProvider, outputs ->
+        createStack(createTemplate(), strStackName, region, false) { credentialsProvider, outputs ->
             println("""*********testing testing credentials $credentialsProvider*************""")
             try {
                 // add files to the unzipcode source

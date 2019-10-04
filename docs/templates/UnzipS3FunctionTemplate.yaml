@@ -1,0 +1,134 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  s3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: 'PublicRead'
+      BucketName: 'testunzipbucket04102019-215341'
+      WebsiteConfiguration:
+        ErrorDocument: 'error.html'
+        IndexDocument: 'index.html'
+  s3BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref s3Bucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+              - 's3:GetObjectVersion'
+              - 's3:ListBucket'
+            Effect: Allow
+            Principal:
+              AWS:
+                - '*'
+            Resource:
+              - !Join
+                  - ''
+                  - - 'arn:aws:s3:::'
+                    - !Ref s3Bucket
+                    - '/*'
+
+
+              - !Join
+                  - ''
+                  - - 'arn:aws:s3:::'
+                    - !Ref s3Bucket
+
+
+
+        Version: '2012-10-17'
+  lambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        ZipFile:  !Sub |
+          # inline
+          #based on unzipcode here: https://www.quora.com/How-do-I-extract-a-zip-file-in-an-Amazon-S3-by-using-Lambda
+          from __future__ import print_function
+          
+          import urllib
+          import boto3
+          import os
+          import zipfile
+          
+          lambda_client = boto3.client('lambda')
+          
+          #-------- S3 variables -----------
+          s3_resource= boto3.resource('s3')
+          s3_client= boto3.client('s3')
+          
+          
+          #-------- global variables -------
+          tmpFolder = '/tmp/'
+          unzipTmpFile='file.zip'
+          deletedZipFolder='deletedZipFolder/'
+          extension = ".zip"
+          
+          #-------- functions begin---------
+          def lambda_handler(event, context):
+              print(event)
+              bucketName = event['bucketName']
+              key = event['key']
+              destinationFolder = event['destinationFolder']
+              bucket = s3_resource.Bucket(bucketName)
+              try:
+                  print('bucketName:{} key:{} '.format(bucketName, key))
+                  unzipAttachment(bucketName, key, destinationFolder)
+                  return('success')
+              except Exception as e:
+                  print(e)
+                  print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
+                  raise e
+                  return(e)
+          
+          #--------- unzip files ----------
+          def unzipAttachment(bucketName, key, destinationFolder):
+              print('unzipAttachment {} {} {}'.format(bucketName, key, destinationFolder))
+              s3_client.download_file(bucketName, key, tmpFolder+unzipTmpFile)
+              dir_name = tmpFolder
+              os.chdir(dir_name)
+              for item in os.listdir(tmpFolder):
+                  if item.endswith(extension):
+                      file_name = os.path.abspath(item)
+                      zip_ref = zipfile.ZipFile(file_name)
+                      zip_ref.extractall(dir_name)
+                      zip_ref.close()
+                      os.remove(file_name)
+              removeFolderStucture(bucketName, key, destinationFolder)
+          
+          #--------- removes nested folder structure----------
+          def removeFolderStucture( bucketName, key, destinationFolder):
+              for p, d, f in os.walk(tmpFolder, topdown=False):
+                  for n in f:
+                      os.rename(os.path.join(p, n), os.path.join(tmpFolder, n))
+                  for n in d:
+                      os.rmdir(os.path.join(p, n))
+              for iitem in os.listdir(tmpFolder):
+                  file_name = os.path.abspath(iitem)
+                  s3_client.upload_file(tmpFolder+iitem, bucketName, '{}/{}'.format(destinationFolder, iitem))
+                  os.remove(file_name)
+
+      FunctionName: 'testunziplambda04102019-215341'
+      Handler: 'index.lambda_handler'
+      Role:
+        Fn::GetAtt:
+          - lambdaRole
+          - Arn
+      Runtime: 'python3.7'
+  lambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+
+        Version: '2012-10-17'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AWSLambdaExecute'

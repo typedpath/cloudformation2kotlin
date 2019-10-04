@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Simple CRUD webservice. State is stored in a SimpleTable (DynamoDB) resource.'
+Outputs:
+  ApiUrl:
+    Description: 'API endpoint URL for Prod environment'
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/resource/"
+Resources:
+  deleteFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: 's3://serverless-testutils-artifact-bucket-us-east-128082019-151241/codepackage_api_backend.zip'
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref table
+      Events:
+        DeleteResource:
+          Type: 'Api'
+          Properties:
+            Method: 'delete'
+            Path: '/resource/{resourceId}'
+      Handler: 'index.delete'
+      Policies:
+        DynamoDBCrudPolicy:
+          TableName: !Ref table
+      Runtime: 'nodejs8.10'
+  getFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: 's3://serverless-testutils-artifact-bucket-us-east-128082019-151241/codepackage_api_backend.zip'
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref table
+      Events:
+        GetResource:
+          Type: 'Api'
+          Properties:
+            Method: 'get'
+            Path: '/resource/{resourceId}'
+      Handler: 'index.get'
+      Policies:
+        DynamoDBReadPolicy:
+          TableName: !Ref table
+      Runtime: 'nodejs8.10'
+  putFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: 's3://serverless-testutils-artifact-bucket-us-east-128082019-151241/codepackage_api_backend.zip'
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref table
+      Events:
+        PutResource:
+          Type: 'Api'
+          Properties:
+            Method: 'put'
+            Path: '/resource/{resourceId}'
+      Handler: 'index.put'
+      Policies:
+        DynamoDBCrudPolicy:
+          TableName: !Ref table
+      Runtime: 'nodejs8.10'
+  table:
+    Type: 'AWS::Serverless::SimpleTable'
+Transform: 'AWS::Serverless-2016-10-31'

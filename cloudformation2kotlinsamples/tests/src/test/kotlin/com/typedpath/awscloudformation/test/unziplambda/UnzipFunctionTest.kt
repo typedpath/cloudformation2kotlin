@@ -7,6 +7,8 @@ import com.amazonaws.services.lambda.model.InvocationType
 import com.amazonaws.services.lambda.model.InvokeRequest
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.ObjectMetadata
+import com.typedpath.awscloudformation.CloudFormationTemplate
+import com.typedpath.awscloudformation.test.TemplateFactory
 import com.typedpath.awscloudformation.test.util.createStack
 import org.junit.Assert
 import org.junit.Test
@@ -25,9 +27,15 @@ import java.util.zip.ZipOutputStream
  * it then writes a zip file to an s3 bucket, then calls the function to unzip this file and downloads the files from
  * s3 to check it
  */
-class UnzipFunctionTest {
+class UnzipFunctionTest : TemplateFactory {
 
     val strDateTime = DateTimeFormatter.ofPattern("ddMMyyyy-HHmmss").format(LocalDateTime.now())
+    val functionName = """testunziplambda$strDateTime"""
+    val testBucketName = """testunzipbucket$strDateTime"""
+
+    override fun createTemplate(): CloudFormationTemplate {
+        return UnzipS3FunctionTemplate(functionName, testBucketName)
+    }
 
     private fun createZip(internalFilename: String, internalContent: String): ByteArray {
         val s = "hello world"
@@ -46,7 +54,7 @@ class UnzipFunctionTest {
     }
 
     fun uploadUnzipDownload(credentialsProvider: AWSCredentialsProvider, region: Regions,
-                                    testBucketName: String, functionName: String) {
+                            testBucketName: String, functionName: String) {
         val s3Client = AmazonS3ClientBuilder.standard()
                 .withCredentials(credentialsProvider)
                 .withRegion(region)
@@ -78,23 +86,16 @@ class UnzipFunctionTest {
         val strData = String(data)
         println("read $strData")
         Assert.assertEquals(textData, strData)
-
     }
-
 
     @Test
     fun testUnzip() {
 
-
-        val functionName = """testunziplambda$strDateTime"""
-        val testBucketName = """testunzipbucket$strDateTime"""
-
-        val testTemplate = UnzipS3FunctionTemplate(functionName, testBucketName)
         val strStackName = """unzipFunctionTestStack$strDateTime"""
 
         val region = Regions.US_EAST_1
 
-        createStack(testTemplate, strStackName, region, false) { credentialsProvider, outputs ->
+        createStack(createTemplate(), strStackName, region, false) { credentialsProvider, outputs ->
             println("""*********testing testing credentials $credentialsProvider*************""")
             try {
                 System.out.println("created stack - running unzip createStack!")
@@ -110,8 +111,8 @@ class UnzipFunctionTest {
 
 
 fun main(args: Array<String>) {
-    val bucketName="testunzipbucket16072019-233350"
-    val functionName ="testunziplambda16072019-233350"
+    val bucketName = "testunzipbucket16072019-233350"
+    val functionName = "testunziplambda16072019-233350"
     //UnzipFunctionTest().uploadUnzipDownload(ProfileCredentialsProvider(), Regions.US_EAST_1, bucketName, functionName )
     UnzipFunctionTest().testUnzip()
 

@@ -1,7 +1,19 @@
 package com.typedpath.awscloudformation.test
 
+import com.typedpath.awscloudformation.CloudFormationTemplate
+import com.typedpath.awscloudformation.toYaml
 import java.io.File
 import java.lang.StringBuilder
+import kotlin.reflect.KClass
+import kotlin.reflect.full.*
+
+/**
+ * searches for links containing "?" and seaches for the relevant file and put in the right link
+ */
+
+fun main(args: Array<String>) {
+    fixReadmeLinks()
+}
 
 fun fixReadmeLinks() {
     val file = File("../readme.md")
@@ -52,16 +64,54 @@ private fun process(textIn: String): String {
 
     var lastEndIndex = 0
 
+    val topFile = File("..")
+
     links.forEach {
 
-        val file = searchForFile(it.name)
+        val file = searchForFile(it.name, topFile)
         if (file == null) {
             println("cant find file ${it.name}")
         }
         val relFilePath = file!!.path.replace("\\", "/").replace("../", "")
 
-        println("${it.name} =>  ${it.startIndex}-${it.endIndex}  ${relFilePath}  ")
+        val kotlinSourceDir = "/kotlin/"
+        val kotlinIndex = relFilePath.indexOf(kotlinSourceDir)
+        var className:String? = null
+        if (kotlinIndex>0) {
+            className = relFilePath.substring(kotlinIndex + kotlinSourceDir.length)
+                    .replace("/", ".")
+                    .replace(".kt", "")
+        }
+        var template: CloudFormationTemplate? = null
+        var templateClass: Class<*>? = null
+        if (className!=null) {
+                try {
+                    val theClass = Class.forName(className)
+                    val instance = theClass.newInstance()
+                    if (instance!=null && instance is TemplateFactory) {
+                        template = instance.createTemplate()
+                        templateClass = template.javaClass
+                    }
+                } catch (ex: Exception) {
+                    println("cant create ${className} because ${ex} ${ex.message} ${if (ex.cause!=null) 
+                        ex.cause else ""}  ")
+                }
 
+        }
+
+
+        println("${it.name} =>  ${it.startIndex}-${it.endIndex}  ${relFilePath} className: $className ")
+
+        if (template!=null) {
+            val strTemplate =  toYaml(template)
+            val templateFilePath  = topFile.toPath().resolve("docs")
+                    .resolve("templates").resolve(templateClass!!.simpleName+".yaml")
+            println("templateFile: ${templateFilePath}")
+            val templateFile = templateFilePath.toFile()
+            templateFile.parentFile.mkdirs()
+            templateFile.writeText(strTemplate)
+            println("wrote to ${templateFile.absolutePath}  template: ${strTemplate.substring(0, 100)}")
+        }
 
         // write from last endIndex to startIndex
         sb.append(textIn.substring(lastEndIndex, it.startIndex))
@@ -77,9 +127,7 @@ private fun process(textIn: String): String {
     return sb.toString()
 }
 
-
-private fun searchForFile(filename: String): File? {
-    val topFile = File("..")
+private fun searchForFile(filename: String, topFile: File): File? {
     val fileTreeWalk = topFile.walk()
     var result: File? = null
     fileTreeWalk.iterator().forEach {

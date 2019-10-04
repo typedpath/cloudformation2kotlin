@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  bucket1:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 'test04oct19-235316s3createeventtest-get-object'
+  s3getobjectFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: 's3://serverless-testutils-artifact-bucket-us-east-1sample/lambdas/example/example.jar'
+      Description: 'An Amazon S3 trigger that retrieves metadata for the object that has
+    been updated.'
+      Events:
+        BucketEvent1:
+          Type: 'S3'
+          Properties:
+            Bucket: !Ref bucket1
+            Events:
+              - 's3:ObjectCreated:*'
+      FunctionName: 'test04oct19-235316s3createeventtest-get-object-function'
+      Handler: 'com.typedpath.serverless.Handler'
+      MemorySize: 1024
+      Policies:
+        Statement:
+          - Action:
+              - 's3:PutObjectTagging'
+              - 's3:GetObject'
+              - 's3:GetObjectAcl'
+              - 's3:GetObjectVersion'
+              - 's3:PutObject'
+              - 's3:PutObjectAcl'
+              - 's3:DeleteObject'
+            Effect: Allow
+            Resource:
+              - 'arn:aws:s3:::test04oct19-235316s3createeventtest-get-object/*'
+
+          - Action:
+              - 's3:ListBucket'
+              - 's3:GetBucketLocation'
+              - 's3:GetLifecycleConfiguration'
+              - 's3:PutLifecycleConfiguration'
+            Effect: Allow
+            Resource:
+              - 'arn:aws:s3:::test04oct19-235316s3createeventtest-get-object'
+
+        Version: '2012-10-17'
+      Runtime: 'java8'
+      Timeout: 30
+Transform: 'AWS::Serverless-2016-10-31'
