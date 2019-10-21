@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.model.Tag
 import com.typedpath.awscloudformation.test.TemplateFactory
 import com.typedpath.awscloudformation.test.uploadBlobToS3
+import com.typedpath.awscloudformation.test.uploadCodeToS3
 import com.typedpath.awscloudformation.test.util.createStack
 import com.typedpath.awscloudformation.test.util.defaultCredentialsProvider
 import com.typedpath.awscloudformation.test.util.defaultCurrentDateTimePattern
@@ -84,17 +85,6 @@ class S3ObjectCreatedEventTest : TemplateFactory {
     override fun createTemplate(): S3ObjectCreatedEventTemplate {
         return  S3ObjectCreatedEventTemplate(codeSourceUri, "test" + bucketNamePrefix)
     }
-
-
-    fun uploadCodeToS3(strFile: String, region: Regions, bucketName: String, bucketKey: String, credentialsProvider: AWSCredentialsProvider): String {
-        val path = Paths.get(strFile)
-        val theFile = path.toFile()
-        println("loading code from ${theFile.absolutePath}")
-        val inputStream = FileInputStream(path.toFile())
-        println("found ${inputStream.available()} bytes in ${path.toAbsolutePath()}")
-        return uploadBlobToS3(region, bucketName, bucketKey, inputStream, credentialsProvider)
-    }
-
 
     @Test
     fun objectCreated() {

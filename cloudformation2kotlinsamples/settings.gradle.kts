@@ -8,5 +8,7 @@
  */
 
 rootProject.name = "cloudformation2kotlinsamples"
+include("domain")
 include("lambdas:s3objectcreated")
+include("lambdas:databaseio")
 include("tests")

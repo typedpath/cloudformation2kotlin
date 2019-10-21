@@ -25,7 +25,7 @@ private fun enableHttpEndpoint(region: Regions, credentials: AWSCredentialsProvi
 
 }
 
-private fun testDb(secretUrn: String, dbClusterUrn: String, dbName: String) {
+private fun testDbApi(secretUrn: String, dbClusterUrn: String, dbName: String) {
     val rdsData = AWSRDSDataClient.builder()
             .build()
     //warm up
@@ -91,7 +91,7 @@ class AuroraServerlessTest : TemplateFactory{
             }
             //this cant be done in the template
             enableHttpEndpoint(region, credentialsProvider, dbClusterIdentifier.outputValue)
-            testDb(secretArn.outputValue, databaseArn.outputValue, "testx")
+            testDbApi(secretArn.outputValue, databaseArn.outputValue, "testx")
 
         }
 

@@ -25,20 +25,11 @@ repositories {
 }
 
 dependencies {
-    //compile(kotlin("org.jetbrains.kotlin:kotlin-stdlib-jdk8"))
-    compile("com.typedpath:cloudformation2kotlin:1.0-SNAPSHOT")
-
-    testCompile("com.amazonaws:aws-java-sdk-lambda:1.11.574")
-    testCompile("com.amazonaws:aws-java-sdk-s3:1.11.574")
-    testCompile("com.amazonaws:aws-java-sdk-cloudformation:1.11.574")
-    testCompile("com.amazonaws:aws-java-sdk-codecommit:1.11.574")
-    testCompile("com.amazonaws:aws-java-sdk-rdsdata:1.11.574")
-    testCompile("com.amazonaws:aws-java-sdk-rds:1.11.574")
+    implementation(kotlin("stdlib"))
     testCompile("junit:junit:4.12")
-    testCompile(project(":domain"))
-
-    //<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-rdsdata -->
-    
+    compile( "org.jetbrains.kotlin:kotlin-reflect")
+    compile("com.amazonaws:aws-java-sdk-rdsdata:1.11.574")
+    compile("com.amazonaws:aws-java-sdk-rds:1.11.574")
 }
 
 val compileKotlin by tasks.getting(KotlinCompile::class) {

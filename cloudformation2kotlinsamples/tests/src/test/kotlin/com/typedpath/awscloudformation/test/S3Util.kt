@@ -7,7 +7,9 @@ import com.amazonaws.services.s3.model.ObjectMetadata
 import com.typedpath.awscloudformation.test.util.zipResourceDirectory
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.FileInputStream
 import java.io.InputStream
+import java.nio.file.Paths
 
 fun uploadBlobToS3(region: Regions, bucketName: String, keyName: String, inputStream: InputStream, credentialsProvider: AWSCredentialsProvider) : String {
     val metadata = ObjectMetadata()
@@ -19,6 +21,15 @@ fun uploadBlobToS3(region: Regions, bucketName: String, keyName: String, inputSt
             .build()
     s3Client.putObject(bucketName, keyName, inputStream, metadata)
     return "s3://$bucketName/$keyName"
+}
+
+fun uploadCodeToS3(strFile: String, region: Regions, bucketName: String, bucketKey: String, credentialsProvider: AWSCredentialsProvider): String {
+    val path = Paths.get(strFile)
+    val theFile = path.toFile()
+    println("loading code from ${theFile.absolutePath}")
+    val inputStream = FileInputStream(path.toFile())
+    println("found ${inputStream.available()} bytes in ${path.toAbsolutePath()}")
+    return uploadBlobToS3(region, bucketName, bucketKey, inputStream, credentialsProvider)
 }
 
 fun zipResourceDirectoryToS3(region: Regions, bucketName: String, keyName: String,
