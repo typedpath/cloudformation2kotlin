@@ -1,6 +1,6 @@
 package com.typedpath.testdomain
 
-class Person(val firstName: String,  val lastName: String, val address: Address)
+class Person(var firstName: String,  var lastName: String, val address: Address)
 
 class Address(val address1: String, val address2: String, val postcode: String)
 

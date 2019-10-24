@@ -2,9 +2,7 @@ package com.typedpath.serverless
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
-import com.typedpath.aurora.AuroraStorer
-import com.typedpath.testdomain.Person
-import java.util.*
+import com.typedpath.testdomain.ID_FIELD
 
 
 class RetrieveMultiHandler : RequestHandler<Any, ApiGatewayResponse> {
@@ -14,7 +12,9 @@ class RetrieveMultiHandler : RequestHandler<Any, ApiGatewayResponse> {
         val typedPathParameters = typedInput["pathParameters"]  as Map<String, Any?>
         val strRoot = typedPathParameters["type"] as String
         val rootClass = Class.forName(strRoot).kotlin
-        val result = createAuroraStorer().loadMultiAsJsonDeep(rootClass)
+        val strIds = typedPathParameters["ids"] as String
+        val strWhere = if (strIds.equals("*")) "" else  " where $ID_FIELD in (${strIds.split(",").map{""" "$it" """}.joinToString (",")})"
+        val result = createAuroraStorer().loadMultiAsJsonDeep(rootClass, strWhere)
 
         return ApiGatewayResponse.build {
             statusCode = 200

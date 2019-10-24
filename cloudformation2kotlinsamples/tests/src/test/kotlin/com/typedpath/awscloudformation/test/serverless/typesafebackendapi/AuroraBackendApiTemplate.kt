@@ -1,4 +1,4 @@
-package com.typedpath.awscloudformation.test.serverless
+package com.typedpath.awscloudformation.test.serverless.typesafebackendapi
 
 import com.typedpath.awscloudformation.IamPolicy
 import com.typedpath.awscloudformation.LambdaRuntime
@@ -58,7 +58,6 @@ class AuroraBackendApiTemplate(databaseNameIn: String, dbMasterUserName: String,
         description = "the dbClusterIdentifier"
     }
 
-
     /**
      * this is necessary because the SAM built in S3FullAccessPolicy doesnt allow tag access
      */
@@ -82,7 +81,7 @@ class AuroraBackendApiTemplate(databaseNameIn: String, dbMasterUserName: String,
     val saveFunction = function("save", "put", "/resource")
     val retrieveFunction = function("retrieve", "get", "/resource/{type}/{id}")
     val deleteFunction = function("delete", "delete", "/resource/{type}/{id}")
-    val retrieveAllFunction = function("retrieveMulti", "get", "/resource/{type}")
+    val retrieveAllFunction = function("retrieveMulti", "get", "/resource/multi/{type}/{ids}")
 
 
     fun function(fType: String, httpMethod: String, path: String) : AWS_Serverless_Function {
@@ -102,7 +101,6 @@ class AuroraBackendApiTemplate(databaseNameIn: String, dbMasterUserName: String,
     }
 
     private fun getFunctionName(fType: String) = "${functionNamePrefix}-$fType"
-
 
     val apiUrlRef = sub("https://\${ServerlessRestApi}.execute-api.\${AWS::Region}.amazonaws.com/Prod/resource/")
 

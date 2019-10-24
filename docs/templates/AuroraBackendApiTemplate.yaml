@@ -1,0 +1,256 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Outputs:
+  apiUrl:
+    Description: 'API endpoint URL for Prod environment'
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/resource/"
+  databaseArn:
+    Description: 'the db arn'
+    Value:
+      !Join
+        - ':'
+        - - 'arn:aws:rds'
+          - !Ref AWS::Region
+          - !Ref AWS::AccountId
+          - 'cluster'
+          - !Ref db
+
+  dbClusterIdentifier:
+    Description: 'the dbClusterIdentifier'
+    Value: !Ref db
+  secretArn:
+    Description: 'the secrets arn'
+    Value: !Ref dbSecret
+Resources:
+  db:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      DatabaseName: 'testdb24oct19224307'
+      Engine: 'aurora'
+      EngineMode: 'serverless'
+      EngineVersion: '5.6.10a'
+      MasterUserPassword:
+        !Join
+          - ''
+          - - '{{resolve:secretsmanager:'
+            - !Ref dbSecret
+            - ':SecretString:password}}'
+
+      MasterUsername:
+        !Join
+          - ''
+          - - '{{resolve:secretsmanager:'
+            - !Ref dbSecret
+            - ':SecretString:username}}'
+
+      ScalingConfiguration:
+        AutoPause: 'true'
+        MaxCapacity: 4
+        MinCapacity: 1
+        SecondsUntilAutoPause: 900
+  dbSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Description: 'RDS database auto-generated user password'
+      GenerateSecretString:
+        ExcludeCharacters: '"@/\'
+        GenerateStringKey: 'password'
+        PasswordLength: 30
+        SecretStringTemplate: '{"username": "admin"}'
+      Name: 'testdb24oct19224307-AuroraUserSecret'
+      Tags:
+        - Key: 'test'
+          Value: 'test testdb24oct19224307'
+
+  deleteFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: 's3://serverless-testutils-artifact-bucket-us-east-128082019-151241/lambdas/databaseio/build/libs/databaseio-fat-testonly.jar'
+      Description: 'test delete aurora'
+      Environment:
+        Variables:
+          secretsArn: !Ref dbSecret
+          dbClusterArn:
+            !Join
+              - ':'
+              - - 'arn:aws:rds'
+                - !Ref AWS::Region
+                - !Ref AWS::AccountId
+                - 'cluster'
+                - !Ref db
+
+          schemaName: 'testschema'
+      Events:
+        DeleteResource:
+          Type: 'Api'
+          Properties:
+            Method: 'delete'
+            Path: '/resource/{type}/{id}'
+      FunctionName: '24oct19-224309rdsaccess-delete'
+      Handler: 'com.typedpath.serverless.DeleteHandler'
+      MemorySize: 1024
+      Policies:
+        Statement:
+          - Action:
+              - 'secretsmanager:GetSecretValue'
+            Effect: Allow
+            Resource:
+              - 'arn:aws:secretsmanager:*:*:secret:testdb24oct19224307*'
+
+          - Action:
+              - 'rds-data:BatchExecuteStatement'
+              - 'rds-data:BeginTransaction'
+              - 'rds-data:CommitTransaction'
+              - 'rds-data:ExecuteStatement'
+              - 'rds-data:RollbackTransaction'
+            Effect: Allow
+            Resource:
+              - '*'
+
+        Version: '2012-10-17'
+      Runtime: 'java8'
+      Timeout: 30
+  retrieveAllFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: 's3://serverless-testutils-artifact-bucket-us-east-128082019-151241/lambdas/databaseio/build/libs/databaseio-fat-testonly.jar'
+      Description: 'test retrieveMulti aurora'
+      Environment:
+        Variables:
+          secretsArn: !Ref dbSecret
+          dbClusterArn:
+            !Join
+              - ':'
+              - - 'arn:aws:rds'
+                - !Ref AWS::Region
+                - !Ref AWS::AccountId
+                - 'cluster'
+                - !Ref db
+
+          schemaName: 'testschema'
+      Events:
+        RetrieveMultiResource:
+          Type: 'Api'
+          Properties:
+            Method: 'get'
+            Path: '/resource/multi/{type}/{ids}'
+      FunctionName: '24oct19-224309rdsaccess-retrieveMulti'
+      Handler: 'com.typedpath.serverless.RetrieveMultiHandler'
+      MemorySize: 1024
+      Policies:
+        Statement:
+          - Action:
+              - 'secretsmanager:GetSecretValue'
+            Effect: Allow
+            Resource:
+              - 'arn:aws:secretsmanager:*:*:secret:testdb24oct19224307*'
+
+          - Action:
+              - 'rds-data:BatchExecuteStatement'
+              - 'rds-data:BeginTransaction'
+              - 'rds-data:CommitTransaction'
+              - 'rds-data:ExecuteStatement'
+              - 'rds-data:RollbackTransaction'
+            Effect: Allow
+            Resource:
+              - '*'
+
+        Version: '2012-10-17'
+      Runtime: 'java8'
+      Timeout: 30
+  retrieveFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: 's3://serverless-testutils-artifact-bucket-us-east-128082019-151241/lambdas/databaseio/build/libs/databaseio-fat-testonly.jar'
+      Description: 'test retrieve aurora'
+      Environment:
+        Variables:
+          secretsArn: !Ref dbSecret
+          dbClusterArn:
+            !Join
+              - ':'
+              - - 'arn:aws:rds'
+                - !Ref AWS::Region
+                - !Ref AWS::AccountId
+                - 'cluster'
+                - !Ref db
+
+          schemaName: 'testschema'
+      Events:
+        RetrieveResource:
+          Type: 'Api'
+          Properties:
+            Method: 'get'
+            Path: '/resource/{type}/{id}'
+      FunctionName: '24oct19-224309rdsaccess-retrieve'
+      Handler: 'com.typedpath.serverless.RetrieveHandler'
+      MemorySize: 1024
+      Policies:
+        Statement:
+          - Action:
+              - 'secretsmanager:GetSecretValue'
+            Effect: Allow
+            Resource:
+              - 'arn:aws:secretsmanager:*:*:secret:testdb24oct19224307*'
+
+          - Action:
+              - 'rds-data:BatchExecuteStatement'
+              - 'rds-data:BeginTransaction'
+              - 'rds-data:CommitTransaction'
+              - 'rds-data:ExecuteStatement'
+              - 'rds-data:RollbackTransaction'
+            Effect: Allow
+            Resource:
+              - '*'
+
+        Version: '2012-10-17'
+      Runtime: 'java8'
+      Timeout: 30
+  saveFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: 's3://serverless-testutils-artifact-bucket-us-east-128082019-151241/lambdas/databaseio/build/libs/databaseio-fat-testonly.jar'
+      Description: 'test save aurora'
+      Environment:
+        Variables:
+          secretsArn: !Ref dbSecret
+          dbClusterArn:
+            !Join
+              - ':'
+              - - 'arn:aws:rds'
+                - !Ref AWS::Region
+                - !Ref AWS::AccountId
+                - 'cluster'
+                - !Ref db
+
+          schemaName: 'testschema'
+      Events:
+        SaveResource:
+          Type: 'Api'
+          Properties:
+            Method: 'put'
+            Path: '/resource'
+      FunctionName: '24oct19-224309rdsaccess-save'
+      Handler: 'com.typedpath.serverless.SaveHandler'
+      MemorySize: 1024
+      Policies:
+        Statement:
+          - Action:
+              - 'secretsmanager:GetSecretValue'
+            Effect: Allow
+            Resource:
+              - 'arn:aws:secretsmanager:*:*:secret:testdb24oct19224307*'
+
+          - Action:
+              - 'rds-data:BatchExecuteStatement'
+              - 'rds-data:BeginTransaction'
+              - 'rds-data:CommitTransaction'
+              - 'rds-data:ExecuteStatement'
+              - 'rds-data:RollbackTransaction'
+            Effect: Allow
+            Resource:
+              - '*'
+
+        Version: '2012-10-17'
+      Runtime: 'java8'
+      Timeout: 30
+Transform: 'AWS::Serverless-2016-10-31'

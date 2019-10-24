@@ -15,7 +15,7 @@ fun testInOut() {
     val person = Person("Andrew", "Eldritch", Address("addr1", "addr2", "AL5 8HJ"))
     val team = Team("team1", listOf(person))
     val object2IdIn = mutableMapOf<Any, UUID>()
-    val jsonMapping = toJsonInsertUuidsTypeInfo(team, object2IdIn)
+    val jsonMapping = toJsonInsertUuidsTypeInfo(team, null, false, object2IdIn)
     println("${jsonMapping} ${object2IdIn}")
     val object2IdOut = mutableMapOf<Any, UUID>()
     val teamOut = toObject(jsonMapping, Team::class, object2IdOut) as Team
