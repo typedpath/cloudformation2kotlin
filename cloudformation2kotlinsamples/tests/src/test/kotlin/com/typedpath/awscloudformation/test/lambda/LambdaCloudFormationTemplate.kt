@@ -7,7 +7,7 @@ import com.typedpath.awscloudformation.schema.AWS_IAM_Role
 import com.typedpath.awscloudformation.schema.AWS_Lambda_Function
 
 open class LambdaCloudFormationTemplate(val functionNameIn: String, val strCode: String,
-                                   val runtime: LambdaRuntime = LambdaRuntime.NodeJs810, val handler: String = "index.handler") : CloudFormationTemplate() {
+                                   val runtime: LambdaRuntime = LambdaRuntime.NodeJs12, val handler: String = "index.handler") : CloudFormationTemplate() {
 
 
     val code = AWS_Lambda_Function.Code().apply {
