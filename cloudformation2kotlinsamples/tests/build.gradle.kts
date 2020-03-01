@@ -7,7 +7,7 @@ plugins {
 }
 
 group  = "com.typedpath"
-version  = "1.0-SNAPSHOT"
+version  = "1.0.0"
 
 val sourceCompatibility = 1.8
 
@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     //compile(kotlin("org.jetbrains.kotlin:kotlin-stdlib-jdk8"))
-    compile("com.typedpath:cloudformation2kotlin:1.0-SNAPSHOT")
+    compile("com.typedpath:cloudformation2kotlin:1.0.0")
 
     testCompile("com.amazonaws:aws-java-sdk-lambda:1.11.574")
     testCompile("com.amazonaws:aws-java-sdk-s3:1.11.574")
