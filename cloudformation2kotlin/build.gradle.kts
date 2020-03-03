@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "com.typedpath.tools"
-version = "1.0.0-SNAPSHOT"
+version = "1.0.0"
 
 val ossrhUsername: String by project
 val ossrhPassword: String by project

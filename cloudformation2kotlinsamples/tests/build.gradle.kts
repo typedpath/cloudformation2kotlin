@@ -17,12 +17,14 @@ apply {
 }
 
 repositories {
-    //maven {
+    // uncomment to use s3
+    // maven {
           //url = uri("https://repositorybuckettest65-s3hostingbucket-qpezmj5xooak.s3.amazonaws.com/repository")
     //}
-    maven {
-        url= uri("https://oss.sonatype.org/content/repositories/snapshots")
-    }
+    // uncomment to test maven snapshots repo
+    //maven {
+    //    url= uri("https://oss.sonatype.org/content/repositories/snapshots")
+    //}
 
     mavenLocal()
     mavenCentral()
@@ -30,7 +32,7 @@ repositories {
 
 dependencies {
     //compile(kotlin("org.jetbrains.kotlin:kotlin-stdlib-jdk8"))
-    compile("com.typedpath:cloudformation2kotlin:1.0.0-SNAPSHOT")
+    compile("com.typedpath:cloudformation2kotlin:1.0.0")
 
     testCompile("com.amazonaws:aws-java-sdk-lambda:1.11.574")
     testCompile("com.amazonaws:aws-java-sdk-s3:1.11.574")
