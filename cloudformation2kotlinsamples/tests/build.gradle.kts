@@ -17,16 +17,20 @@ apply {
 }
 
 repositories {
+    //maven {
+          //url = uri("https://repositorybuckettest65-s3hostingbucket-qpezmj5xooak.s3.amazonaws.com/repository")
+    //}
     maven {
-          url = uri("https://repositorybuckettest65-s3hostingbucket-qpezmj5xooak.s3.amazonaws.com/repository")
+        url= uri("https://oss.sonatype.org/content/repositories/snapshots")
     }
+
     mavenLocal()
     mavenCentral()
 }
 
 dependencies {
     //compile(kotlin("org.jetbrains.kotlin:kotlin-stdlib-jdk8"))
-    compile("com.typedpath:cloudformation2kotlin:1.0.0")
+    compile("com.typedpath:cloudformation2kotlin:1.0.0-SNAPSHOT")
 
     testCompile("com.amazonaws:aws-java-sdk-lambda:1.11.574")
     testCompile("com.amazonaws:aws-java-sdk-s3:1.11.574")

@@ -6,7 +6,11 @@
  */
  allprojects {
      repositories {
+
          jcenter()
+
+
+
      }
  }
 
