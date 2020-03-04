@@ -77,6 +77,7 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 *.iml
 .gradle
+.gradle/
 /local.properties
 /.idea/libraries
 /.idea/modules.xml
