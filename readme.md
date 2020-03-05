@@ -9,6 +9,19 @@ gradle publishToMavenLocal
 This will take the aws json schema definitions (copied from https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-resource-specification.html) convert them to kotlin and bundle them into a maven artifact along with some helper code. 
 It also includes some classes create manually because I cant find a schema definition for them e.g. __IamPolicy__ and serverless resources such as __AWS::Serverless::Function__.  There are also some properties that are mapped to __Any?__ because I havent mapped the schema manually yet.  
 
+## Using Code from Gradle
+In build.gradle.kts
+```gradle
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile("com.typedpath:cloudformation2kotlin:1.0.0")
+}
+
+```
+
 ## Running tests
 make sure the default aws user in ~/.aws has admin permissions!
 <pre>cd cloudformationsamples
