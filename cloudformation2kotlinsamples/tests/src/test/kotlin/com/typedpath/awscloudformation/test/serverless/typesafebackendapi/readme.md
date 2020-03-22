@@ -3,7 +3,7 @@ This example provides generic typesafe CRUD storage backed by a REST api pointin
 
 __generic__ meaning that the example will work with any object model defined with the same conventions as the model used in this example (defined in com.typedpath.testdomain.Sample.kt).  i.e all data is nested.
 
-__typesafe__ meaining that objects cant be saved with the wrong types or field names.
+__typesafe__ meaning that objects cant be saved or loaded with the wrong types or field names.
 
 The service is wrapped on the client side with __com.typedpath.awscloudformation.test.serverless.typesafebackendapi.Saver__ which is used like this:
 
@@ -28,7 +28,7 @@ It doesnt use any libraries other than the kotlin standard libraries.
 
 Its very basic - only String properties are supported and data is assumed to be contained only e.g. a Team instance contains everything below it. Database ids are managed outside of the domain objects. 
 
-All the serialization code is contained in file com.typedpath.testdomain.Serialize.kt.  This serializer is b friendly - it manages db ids and db actions.
+All the serialization code is contained in file com.typedpath.testdomain.Serialize.kt.  This serializer is db friendly - it manages db ids and db actions.
 
 All the db code is contained in __com.typedpath.aurora.AuroraStorer__.  In addition to low level CRUD __AuroraStorer.kt__ also provides 2 operations that can't be specified in cloudformation:
 
