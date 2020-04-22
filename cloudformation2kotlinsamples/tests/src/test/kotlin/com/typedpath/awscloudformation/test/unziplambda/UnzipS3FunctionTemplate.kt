@@ -1,37 +1,38 @@
 package com.typedpath.awscloudformation.test.unziplambda
 
-import com.typedpath.awscloudformation.IamPolicy
 import com.typedpath.awscloudformation.LambdaRuntime
 import com.typedpath.awscloudformation.schema.AWS_S3_Bucket
 import com.typedpath.awscloudformation.schema.AWS_S3_BucketPolicy
 import com.typedpath.awscloudformation.test.lambda.LambdaCloudFormationTemplate
+import com.typedpath.iam2kotlin.IamPolicy
+import com.typedpath.iam2kotlin.resources.s3.S3Action
 
 
 class UnzipS3FunctionTemplate(functionName: String, testBucketName: String) : LambdaCloudFormationTemplate(functionName, pythonZipFunction(testBucketName),
         LambdaRuntime.Python3_7, "index.lambda_handler") {
 
-    val s3Bucket = AWS_S3_Bucket().apply {
+    val s3Bucket = AWS_S3_Bucket {
         //TODO inject enumeration
         accessControl = "PublicRead"
-        websiteConfiguration = websiteConfiguration {
+        websiteConfiguration = AWS_S3_Bucket.WebsiteConfiguration {
             indexDocument = "index.html"
             errorDocument = "error.html"
         }
         bucketName = testBucketName
     }
 
-    val policyDocument = IamPolicy().apply {
+    val policyDocument = IamPolicy() {
         statement {
             effect = IamPolicy.EffectType.Allow
-            principal = mapOf(
+            principal = mutableMapOf(
                     Pair(IamPolicy.PrincipalType.AWS, listOf("*"))
             )
-            action += "s3:GetObject"
-            action += "s3:PutObject"
-            action += "s3:GetObjectVersion"
-            action += "s3:ListBucket"
-            resource +=join("", listOf("arn:aws:s3:::", ref(s3Bucket), "/*"))
-            resource +=join("", listOf("arn:aws:s3:::", ref(s3Bucket)))
+            action (S3Action.GetObject)
+            action( S3Action.PutObject)
+            action (S3Action.GetObjectVersion)
+            action(S3Action.ListBucket)
+            resource(S3Action.GetObject.byBucketnameKeyname(testBucketName, "*"))
+            resource(S3Action.ListBucket.byBucketname(testBucketName))
         }
     }
 

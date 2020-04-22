@@ -15,9 +15,13 @@
  }
 
  subprojects {
-     version = "1.0.0"
+     version = "2.0.0-SNAPSHOT"
      apply(plugin = "java")
  }
+
+plugins {
+  "kotlin"
+}
 
 project(":tests") {
     dependencies {

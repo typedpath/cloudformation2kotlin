@@ -11,16 +11,17 @@ enum class ParameterType(val awsTypeName: String) {
   }
 }
 
-open class CloudFormationTemplate {
+open class CloudFormationTemplate(initIn: CloudFormationTemplate.() -> Unit = {}) {
   val AWSTemplateFormatVersion = "2010-09-09"
   open val transform: String? = null
   open val description : String? = null
 
-  class Parameter(val type: ParameterType, val description: String) {
+  class Parameter(val type: ParameterType, val description: String, initIn: Parameter.() -> Unit = {}) {
     var default: String? = null
     var minLength: Int? = null
     var maxLength: Int? = null
     var allowedPattern: String? = null
+    init {initIn()}
   }
 
   //TO make this lower case
@@ -31,12 +32,13 @@ open class CloudFormationTemplate {
   }
 
   // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html
-  class Output(val value: String) {
+  class Output(val value: String, initIn: Output.() -> Unit = {}) {
     var description: String? = null
 
     class Export(val name: String)
 
     var export: Export? = null
+    init {initIn()}
   }
 
   var outputs = mutableMapOf<String, Output>()
@@ -126,13 +128,6 @@ $js""".trimIndent())
     return id
   }
 
-  fun Parameter(
-      type: ParameterType,
-      description: String,
-      init: Parameter.() -> Unit
-  ): Parameter =
-    Parameter(type, description).apply(init)
-
   abstract class Materializeable {
      abstract fun materialise() : Any
   }
@@ -158,7 +153,6 @@ $js""".trimIndent())
 
   fun deref(value: Any): Any {
     //TODO inline function call
-
 
     val obj = refs.get(value)
     if (obj == null) throw RuntimeException("cant deref $obj")
@@ -187,9 +181,7 @@ $js""".trimIndent())
 
   fun isRef(value: Any) = refs.containsKey(value)
 
+  init {initIn()}
+
 }
-
-fun cloudFormationTemplate(init: CloudFormationTemplate.() -> Unit): CloudFormationTemplate =
-  CloudFormationTemplate().apply(init)
-
 

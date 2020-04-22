@@ -10,8 +10,8 @@ plugins {
     signing
 }
 
-group = "com.typedpath.tools"
-version = "1.0.0"
+group = "com.typedpath"
+version = "2.0.0"
 
 val ossrhUsername: String by project
 val ossrhPassword: String by project
@@ -38,11 +38,17 @@ repositories {
     mavenLocal()
     mavenCentral()
     jcenter()
+    // uncomment to test maven snapshots repo
+    /*maven {
+        url= uri("https://oss.sonatype.org/content/repositories/snapshots")
+    }*/
+
 }
 
 dependencies {
     compile(kotlin("stdlib-jdk8"))
     compile (kotlin("reflect"))
+    compile("com.typedpath:iam2kotlin:1.0.0")
     testCompile("junit:junit:4.12")
 }
 

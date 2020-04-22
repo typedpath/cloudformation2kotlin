@@ -19,7 +19,7 @@ class ServerlessBackendApiRefactoredTemplate(val codeUriIn: String) : Serverless
     val deleteFunction = function("delete")
 
     private fun function(method: String) : AWS_Serverless_Function =
-        AWS_Serverless_Function("index.${method.toLowerCase()}", LambdaRuntime.NodeJs12.id).apply {
+        AWS_Serverless_Function("index.${method.toLowerCase()}", LambdaRuntime.NodeJs12.id) {
             codeUri = codeUriIn
             policy(AWS_Serverless_Function.DynamoDBCrudPolicy(table, this@ServerlessBackendApiRefactoredTemplate))
             event("${method.toLowerCase().capitalize()}Resource", AWS_Serverless_Function.ApiEvent("/resource/{resourceId}", method.toLowerCase()))
@@ -28,7 +28,7 @@ class ServerlessBackendApiRefactoredTemplate(val codeUriIn: String) : Serverless
 
     val apiUrlRef = sub("https://\${ServerlessRestApi}.execute-api.\${AWS::Region}.amazonaws.com/Prod/resource/")
 
-    val ApiUrl = Output(apiUrlRef).apply {
+    val ApiUrl = Output(apiUrlRef) {
         description = "API endpoint URL for Prod environment"
     }
 }

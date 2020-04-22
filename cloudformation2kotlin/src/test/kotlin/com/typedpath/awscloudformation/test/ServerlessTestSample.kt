@@ -7,7 +7,7 @@ import com.typedpath.awscloudformation.serverlessschema.ServerlessCloudformation
 import com.typedpath.awscloudformation.toYaml
 import org.junit.Test
 
-class ServerlessTest {
+class ServerlessTestSample {
     @Test
     fun basic() {
         val strTemplate = toYaml(BasicTemplate())
@@ -20,7 +20,6 @@ class ServerlessTest {
                 description = "A Hello World Test"
                 codeUri= "src/"
         }
-
     }
 
     @Test
@@ -34,14 +33,14 @@ class ServerlessTest {
 
         val table = AWS_Serverless_SimpleTable()
 
-        val getFunction = AWS_Serverless_Function("index.get", LambdaRuntime.NodeJs810.id).apply {
+        val getFunction = AWS_Serverless_Function("index.get", LambdaRuntime.NodeJs810.id) {
              codeUri="src/"
              policy(AWS_Serverless_Function.DynamoDBReadPolicy(table, this@BackendApiTemplate))
              event("GetResource", AWS_Serverless_Function.ApiEvent("/resource/{resourceId}","get"))
             timeout = 21
         }
 
-        val putFunction = AWS_Serverless_Function("index.put", LambdaRuntime.NodeJs810.id).apply {
+        val putFunction = AWS_Serverless_Function("index.put", LambdaRuntime.NodeJs810.id) {
             codeUri="src/"
             policy(AWS_Serverless_Function.DynamoDBCrudPolicy(table, this@BackendApiTemplate))
             event("PutResource", AWS_Serverless_Function.ApiEvent("/resource/{resourceId}","put"))
@@ -51,12 +50,10 @@ class ServerlessTest {
 
         val apiUrlRef = sub("https://\${ServerlessRestApi}.execute-api.\${AWS::Region}.amazonaws.com/Prod/resource/")
 
-        val ApiUrl = Output( apiUrlRef).apply {
+        val ApiUrl = Output( apiUrlRef) {
             description = "API endpoint URL for Prod environment"
         }
 
-
     }
-
 
 }

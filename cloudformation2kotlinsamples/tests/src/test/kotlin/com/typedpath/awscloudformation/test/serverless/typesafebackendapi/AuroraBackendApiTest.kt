@@ -133,3 +133,9 @@ class AuroraBackendApiTest : TemplateFactory {
     }
 
 }
+
+fun mainx(args: Array<String>) {
+    //com-typedpath-awscloudformation-test-serverles-db-1hoamwalltjfp.cluster-c4pff6tta7g4.us-east-1.rds.amazonaws.com
+                                   //https://hj27anqr49.execute-api.us-east-1.amazonaws.com/Prod
+    testAuroraServerlessApi("https://hj27anqr49.execute-api.us-east-1.amazonaws.com/Prod/resource/")
+}

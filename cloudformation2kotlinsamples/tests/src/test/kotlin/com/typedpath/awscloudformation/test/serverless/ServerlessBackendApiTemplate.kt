@@ -11,21 +11,21 @@ class ServerlessBackendApiTemplate(codeUriIn: String) : ServerlessCloudformation
 
     val table = AWS_Serverless_SimpleTable()
 
-    val getFunction = AWS_Serverless_Function("index.get", LambdaRuntime.NodeJs12.id).apply {
+    val getFunction = AWS_Serverless_Function("index.get", LambdaRuntime.NodeJs12.id) {
         codeUri = codeUriIn
         policy(AWS_Serverless_Function.DynamoDBReadPolicy(table, this@ServerlessBackendApiTemplate))
         event("GetResource", AWS_Serverless_Function.ApiEvent("/resource/{resourceId}", "get"))
         environment("TABLE_NAME", this@ServerlessBackendApiTemplate.ref(table))
     }
 
-    val putFunction = AWS_Serverless_Function("index.put", LambdaRuntime.NodeJs12.id).apply {
+    val putFunction = AWS_Serverless_Function("index.put", LambdaRuntime.NodeJs12.id) {
         codeUri = codeUriIn
         policy(AWS_Serverless_Function.DynamoDBCrudPolicy(table, this@ServerlessBackendApiTemplate))
         event("PutResource", AWS_Serverless_Function.ApiEvent("/resource/{resourceId}", "put"))
         environment("TABLE_NAME", this@ServerlessBackendApiTemplate.ref(table))
     }
 
-    val deleteFunction = AWS_Serverless_Function("index.delete", LambdaRuntime.NodeJs12.id).apply {
+    val deleteFunction = AWS_Serverless_Function("index.delete", LambdaRuntime.NodeJs12.id) {
         codeUri = codeUriIn
         policy(AWS_Serverless_Function.DynamoDBCrudPolicy(table, this@ServerlessBackendApiTemplate))
         event("DeleteResource", AWS_Serverless_Function.ApiEvent("/resource/{resourceId}", "delete"))
@@ -34,7 +34,7 @@ class ServerlessBackendApiTemplate(codeUriIn: String) : ServerlessCloudformation
 
     val apiUrlRef = sub("https://\${ServerlessRestApi}.execute-api.\${AWS::Region}.amazonaws.com/Prod/resource/")
 
-    val ApiUrl = Output(apiUrlRef).apply {
+    val ApiUrl = Output(apiUrlRef) {
         description = "API endpoint URL for Prod environment"
     }
 

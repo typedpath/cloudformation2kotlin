@@ -2,7 +2,7 @@
 plugins {
     java
     maven
-    "kotlin"
+    //"kotlin"
     "io.spring.dependency-management"
     //"com.github.johnrengelman.shadow"
     //"de.sebastianboegl.shadow.transformer.log4j"

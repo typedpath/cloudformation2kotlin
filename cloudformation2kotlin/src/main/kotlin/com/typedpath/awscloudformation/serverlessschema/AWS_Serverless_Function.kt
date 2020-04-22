@@ -1,14 +1,14 @@
 package com.typedpath.awscloudformation.serverlessschema
 
 import com.typedpath.awscloudformation.CloudFormationTemplate
-import com.typedpath.awscloudformation.IamPolicy
+import com.typedpath.iam2kotlin.IamPolicy
 import com.typedpath.awscloudformation.schema.AWS_S3_Bucket
 
 //TODO ref sam_resources.py
 // https://github.com/softprops/typed-lambda/tree/master/events
 //https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#resource-types
 class AWS_Serverless_Function(  val handler: String,
-                                val runtime: String): ServerlessResource () {
+                                val runtime: String, initIn: AWS_Serverless_Function.() -> Unit = {}): ServerlessResource () {
     override fun getResourceType_() = "AWS::Serverless::Function"
     var functionName : String? = null
     // Properties:
@@ -84,5 +84,6 @@ class AWS_Serverless_Function(  val handler: String,
         var variables: MutableMap<String, String> = mutableMapOf()
     }
 
+    init { initIn ()}
 
 }

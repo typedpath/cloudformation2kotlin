@@ -17,10 +17,20 @@ repositories {
 }
 
 dependencies {
-    compile("com.typedpath:cloudformation2kotlin:1.0.0")
+    compile("com.typedpath:cloudformation2kotlin:2.0.0")
 }
 
 ```
+## Using Code from Maven
+in pom.xml
+```xml
+<dependency>
+  <groupId>com.typedpath</groupId>
+  <artifactId>cloudformation2kotlin</artifactId>
+  <version>2.0.0</version>
+</dependency>
+```
+
 
 ## Running tests
 make sure the default aws user in ~/.aws has admin permissions!
@@ -82,15 +92,15 @@ Note the use of helper function <i>ref(s3Bucket)</i>) - this makes it difficult 
 
 The property definition for policyDocument is:
 ```kotlin
-  val policyDocument = IamPolicy().apply {
+  val policyDocument = IamPolicy {
     statement {
       effect = IamPolicy.EffectType.Allow
       principal = mapOf(
         Pair(IamPolicy.PrincipalType.AWS, listOf("*"))
       )
-      action("s3:GetObject")
+      action(S3Action.GetObject)
       resource +=join("", listOf("arn:aws:s3:::", ref(s3Bucket), "/*"))
     }
   }
 ```
-The constructor for __IamPolicy__ has no arguments because there are no mandatory properties.  Non mandatory properties are specified in the __apply__ block. Note also that __policyDocument__ does not appear in the top level of the yaml template, it is inlined where it is referenced.  This is because it is not a cloud formation resource i.e. not an instance of  __com.typedpath.awscloudformation.Resource__.  Class __IamPolicy__ was created manually (unlike Kotlin resource definiton classes) because I couldnt find an amazon supplied schema (json or otherwise) for it.  
+The constructor for __IamPolicy__ has no arguments because there are no mandatory properties.  Non mandatory properties are specified in the init block. Note also that __policyDocument__ does not appear in the top level of the yaml template, it is inlined where it is referenced.  This is because it is not a cloud formation resource i.e. not an instance of  __com.typedpath.awscloudformation.Resource__.  Class __IamPolicy__ was created manually (unlike Kotlin resource definiton classes) because I couldnt find an amazon supplied schema (json or otherwise) for it.  

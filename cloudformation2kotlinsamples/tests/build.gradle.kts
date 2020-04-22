@@ -32,7 +32,7 @@ repositories {
 
 dependencies {
     //compile(kotlin("org.jetbrains.kotlin:kotlin-stdlib-jdk8"))
-    compile("com.typedpath:cloudformation2kotlin:1.0.0")
+    compile("com.typedpath:cloudformation2kotlin:2.0.0")
 
     testCompile("com.amazonaws:aws-java-sdk-lambda:1.11.574")
     testCompile("com.amazonaws:aws-java-sdk-s3:1.11.574")
@@ -43,8 +43,6 @@ dependencies {
     testCompile("junit:junit:4.12")
     testCompile(project(":domain"))
 
-    //<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-rdsdata -->
-    
 }
 
 val compileKotlin by tasks.getting(KotlinCompile::class) {

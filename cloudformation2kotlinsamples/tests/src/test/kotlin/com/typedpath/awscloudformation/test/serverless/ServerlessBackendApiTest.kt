@@ -11,7 +11,6 @@ import com.typedpath.awscloudformation.test.util.defaultCredentialsProvider
 import com.typedpath.awscloudformation.test.util.defaultStackName
 import com.typedpath.awscloudformation.test.util.createStack
 import com.typedpath.awscloudformation.test.withoutextension.getOrCreateTestArtifactS3BucketName
-import com.typedpath.awscloudformation.test.util.zipResourceDirectory
 import com.typedpath.awscloudformation.test.zipResourceDirectoryToS3
 import com.typedpath.awscloudformation.toYaml
 import org.apache.http.client.methods.HttpDelete
@@ -22,9 +21,6 @@ import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
 import org.junit.Assert
 import org.junit.Test
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import java.util.*
 
 // reimplements and tests this https://github.com/awslabs/serverless-application-model/tree/master/examples/2016-10-31/api_backend

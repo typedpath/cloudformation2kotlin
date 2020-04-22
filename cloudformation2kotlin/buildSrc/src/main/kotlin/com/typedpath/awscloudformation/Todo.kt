@@ -5,19 +5,19 @@ fun main(args: Array<String>) {
     """
 // TODO pipeline integration test
 //     https://docs.aws.amazon.com/solutions/latest/aws-cloudformation-validation-pipeline/template.html
-// TODO move copied code from package internal
 // TODO add attributed validation rules e.g. Lambda.Code (one of Zip, S3 Bucket etc)
 // TODO tidy s3maven deploy - implement non snapshot rule / add s3 bucket bootstrap
-// TODO binary distribution - jfrog ?
-// TODO implement dependsOn
+// TODO implement dependsOn 
 // TODO add pipeline validation rules
 // TODO code this: https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-pipeline-structure.html
 // TODO - are these workable in AWS_S3_Bucket: Id="MyPolicy", Sid = "PublicReadForGetBucketObjects" ?
-// TODO by extension out of order problem
 // TODO strategy for pseudo parameters
 // TODO implement Description
-// TODO complete all json files
 // TODO differentiate between regions
+// DONE TODO move copied code from package internal
+// DONE TODO binary distribution 
+// DONE TODO by extension out of order problem
+// DONE TODO complete all json files
 // DONE TODO integration test - in cloudformationsample project
 // DONE TODO eliminate file copies in build
 // DONE N/A TODO add json files to source sets so kotlin main src doesnt need any files

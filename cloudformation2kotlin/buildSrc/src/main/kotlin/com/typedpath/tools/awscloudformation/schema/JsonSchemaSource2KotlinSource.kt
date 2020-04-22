@@ -4,7 +4,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror
 import java.util.*
 import java.util.Arrays.asList
 
-val IamPolicyQualifiedClassName = "com.typedpath.awscloudformation.IamPolicy"
+val IamPolicyQualifiedClassName = "com.typedpath.iam2kotlin.IamPolicy"
 val UntypedJsonQualifiedClassName = "Any"
 val PipelineStageActionConfigurationQualifiedClassName="com.typedpath.awscloudformation.schema.PipelineStageActionConfiguration"
 val ResourceQualifiedClassName = "com.typedpath.awscloudformation.Resource"
@@ -159,7 +159,7 @@ class $className(${
     """
   val ${propertySpec(resourceName, it.name(), it.value)}"""
   }
-  })${if (isRoot) """: ${ResourceQualifiedClassName} () """ else ""} {
+  }${if (hasImmutableProperties) "," else ""} initIn: $className.() -> Unit = {})${if (isRoot) """: ${ResourceQualifiedClassName} () """ else ""} {
   ${if (isRoot) "override" else ""} fun getResourceType_() = "$resourceName"
   // Properties:${
   mutableProperties.joinToString("") {
@@ -171,7 +171,6 @@ ${attributeNames.joinToString("") {
     """  fun ${camelCase(it)}Attribute() = Attribute(this, "${it}");
 """
   }}
-
 ${if (isRoot) {
     innerClassSpecs.map {
       jsonSchema2Kotlin(
@@ -184,16 +183,8 @@ ${if (isRoot) {
     }.joinToString("")
   } else ""
   }
+init { initIn() }
 }
-fun ${camelCase(className)}(${
-  immutableProperties.joinToString(",") {
-    """${propertySpec(className, it.name(), it.value, isRoot)}"""
-  }
-  }${if (hasImmutableProperties) "," else ""} init: $className.()
-    -> Unit
-): $className = $className(${immutableProperties.joinToString(",")
-  { """ ${it.name()}""" }}).apply(init)
-
 """
   return Pair(className, strClass)
 }

@@ -1,0 +1,19 @@
+com.typedpath.awscloudformation.test.lambda.LambdaTest > lambda FAILED
+    java.lang.IllegalStateException at LambdaTest.kt:40
+
+com.typedpath.awscloudformation.test.pipeline.PipelineTest > pipeline FAILED
+    java.lang.IllegalStateException at PipelineTest.kt:76
+
+com.typedpath.awscloudformation.test.s3.S3Test > publicBucket FAILED
+    java.lang.IllegalStateException at S3Test.kt:42
+
+com.typedpath.awscloudformation.test.serverless.S3ObjectCreatedEventTest > objectCreated FAILED
+    java.io.FileNotFoundException at S3ObjectCreatedEventTest.kt:92
+
+com.typedpath.awscloudformation.test.serverless.typesafebackendapi.AuroraBackendApiTest > deployAndTest FAILED
+    java.io.FileNotFoundException at AuroraBackendApiTest.kt:88
+
+com.typedpath.awscloudformation.test.unziplambda.UnzipFunctionTest > testUnzip FAILED
+    java.lang.IllegalStateException at UnzipFunctionTest.kt:98
+
+11 tests completed, 6 failed

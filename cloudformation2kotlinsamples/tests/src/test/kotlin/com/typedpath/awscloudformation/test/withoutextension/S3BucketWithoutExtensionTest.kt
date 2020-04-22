@@ -3,9 +3,9 @@ package com.typedpath.awscloudformation.test.withoutextension
 import com.typedpath.awscloudformation.*
 import com.typedpath.awscloudformation.schema.AWS_S3_Bucket
 import com.typedpath.awscloudformation.schema.AWS_S3_BucketPolicy
-import com.typedpath.awscloudformation.schema.aWS_S3_Bucket
-import com.typedpath.awscloudformation.schema.aWS_S3_BucketPolicy
-import java.util.*
+
+import com.typedpath.iam2kotlin.IamPolicy
+import com.typedpath.iam2kotlin.resources.s3.S3Action
 
 class S3BucketTest {
 
@@ -14,7 +14,7 @@ class S3BucketTest {
     val bucket = s3HostingBucket()
 
     val template =
-      cloudFormationTemplate {
+      CloudFormationTemplate {
         resource("bucket1", bucket)
         resource("bucketPolicy", s3HostingBucketPolicy(this, bucket))
       }
@@ -22,27 +22,27 @@ class S3BucketTest {
   }
 
   fun s3HostingBucketPolicy(host: CloudFormationTemplate, s3Bucket: AWS_S3_Bucket) : AWS_S3_BucketPolicy {
-    val policyDocument = iamPolicy {
+    val policyDocument = IamPolicy {
 //TODO - are these workable
 //        Id="MyPolicy"
 //        Sid = "PublicReadForGetBucketObjects"
       statement {
         effect = IamPolicy.EffectType.Allow
-        principal = mapOf(
+        principal = mutableMapOf(
           Pair(IamPolicy.PrincipalType.AWS, listOf("*"))
         )
-        action("s3:GetObject")
-        resource += host.join ( "", listOf("arn:aws:s3:::", host.ref(s3Bucket), "/*"))
+        action( S3Action.GetObject)
+        resource ( IamPolicy.Resource(host.join ( "", listOf("arn:aws:s3:::", host.ref(s3Bucket), "/*"))))
       }
     }
-    return aWS_S3_BucketPolicy(host.ref(s3Bucket), policyDocument) {
+    return AWS_S3_BucketPolicy(host.ref(s3Bucket), policyDocument) {
     }
   }
   fun s3HostingBucket() : AWS_S3_Bucket {
-    return aWS_S3_Bucket {
+    return AWS_S3_Bucket {
       //TODO inject enumeration
       accessControl = "PublicRead"
-      websiteConfiguration = websiteConfiguration {
+      websiteConfiguration = AWS_S3_Bucket.WebsiteConfiguration {
         indexDocument = "index.html"
         errorDocument = "error.html"
       }
@@ -53,7 +53,7 @@ class S3BucketTest {
 
   fun s3HostingBucketTest() {
     val s3Bucket = s3HostingBucket()
-    val template = cloudFormationTemplate {
+    val template = CloudFormationTemplate {
       resource("s3HostingBucket", s3Bucket)
       resource ("s3BucketPolicy", s3HostingBucketPolicy(this, s3Bucket))
     }
@@ -64,27 +64,4 @@ class S3BucketTest {
 
 fun main (args: Array<String>) {
   S3BucketTest().s3HostingBucketTest()
-  //var jsObject =
-  //  mapOf(Pair("!Join", listOf("''", listOf("arn:aws:s3:::", "!Ref s3HostingBucket", "/*"))))
-  //println(toYamlString(jsObject))
 }
-
-/*
-
-
-  Properties:
-      PolicyDocument:
-        Id: MyPolicy
-        Version: 2012-10-17
-        Statement:
-        - Sid: PublicReadForGetBucketObjects
-          effect: Allow
-          principal: '*'
-          action: 's3:GetObject'
-          resource: !Join
-          - ''
-          - - 'arn:aws:s3:::'
-            - !Ref S3Bucket
-            - / *
-      Bucket: !Ref S3Bucket
- */
