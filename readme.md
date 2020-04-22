@@ -63,7 +63,11 @@ templates declared in this way will have a cloudformation resource for every pro
 In the case of __S3PublicReadableCloudFormationTemplate.kt__ these 2 property declarations map to an s3 bucket and a s3 bucket policy in the stack:
 ```kotlin
    val s3Bucket = AWS_S3_Bucket() . . . . 
-   val s3BucketPolicy = AWS_S3_BucketPolicy(ref(s3Bucket), policyDocument) . . . .
+   val s3BucketPolicy = AWS_S3_BucketPolicy(ref(s3Bucket), policyDocument) 
+   val db = AWS_RDS_DBCluster("aurora" /* mandatory fields!*/) {
+                // optional fields
+                engineMode="serverless"
+   . . . .
 ```
 Templates are mapped to yaml with the __toYaml__ function e.g.:
 ```kotlin
@@ -86,9 +90,13 @@ s3BucketPolicy:
           - Action:
               - 's3:GetObject'
             Effect: Allow
+db:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+    EngineMode: 'serverless'            
 . . . .
 ```
-Note the use of helper function <i>ref(s3Bucket)</i>) - this makes it difficult to create an invalid cloudformation reference.
+Note the use of helper function <i>ref(s3Bucket)</i>) - this makes it difficult to create an invalid cloudformation reference.  Note also that all mandatory fields are in the constructor and optional fields can be specified in the optional init block.
 
 The property definition for policyDocument is:
 ```kotlin
