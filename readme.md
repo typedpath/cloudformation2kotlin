@@ -93,7 +93,7 @@ s3BucketPolicy:
 db:
     Type: 'AWS::RDS::DBCluster'
     Properties:
-    EngineMode: 'serverless'            
+      EngineMode: 'serverless'            
 . . . .
 ```
 Note the use of helper function <i>ref(s3Bucket)</i>) - this makes it difficult to create an invalid cloudformation reference.  Note also that all mandatory fields are in the constructor and optional fields can be specified in the optional init block.
