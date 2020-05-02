@@ -4,6 +4,7 @@ import java.util.*
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.memberProperties
+import kotlin.text.*
 
 class MultiLineValue(val lines: List<String>) {
 }
@@ -133,7 +134,11 @@ private fun toJsSimpleValue(
     if (value is ParameterType) {
       value.awsTypeName
     } else if (value is Number) {
-      "$value"
+      var strValue = "$value"
+      if (strValue.endsWith(".0")) {
+        strValue = strValue.substring(0, strValue.length-2)
+      }
+      strValue
     }
 
     else "'${value}'"
