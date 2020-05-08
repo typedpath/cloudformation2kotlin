@@ -70,6 +70,11 @@ open class CloudFormationTemplate(initIn: CloudFormationTemplate.() -> Unit = {}
     override fun getResourceType_(): String = name
   }
 
+  /*
+  tag class to designate a group of resources that will be mapped into the template
+   */
+  open class ResourceGroup
+
   fun refStatic(name: String): String {
     val id = UUID.randomUUID().toString()
     refs.put(id, StaticResource(name))
