@@ -12,7 +12,7 @@ class AWS_Serverless_Function(  val handler: String,
     override fun getResourceType_() = "AWS::Serverless::Function"
     var functionName : String? = null
     // Properties:
-    var codeUri: String? = null
+    var codeUri: Any? = null
     var inlineCode: String? = null
     var description: String? = null
     var memorySize: Int? = null
@@ -26,6 +26,10 @@ class AWS_Serverless_Function(  val handler: String,
             environment = Environment()
         }
         environment!!.variables.put(key, value)
+    }
+
+    fun codeUri(bucket: String, key: String) {
+        this.codeUri = mapOf("Bucket" to bucket, "Key" to key)
     }
 
     fun policy(value: IamPolicy) {
@@ -61,8 +65,17 @@ class AWS_Serverless_Function(  val handler: String,
     abstract class ServerlessEvent : ServerlessResource()
 
     //https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-    class ApiEvent(val path: String, val method: String) : ServerlessEvent() {
+    open class ApiEvent(val path: String, val method: String, initIn: ApiEvent.() -> Unit = {}) : ServerlessEvent() {
         override fun getResourceType_() = "Api"
+        var restApiId: String? = null // e.g. !Ref BasicAWSApiGateway (type AWS::Serverless::Api)
+        var auth: Auth? = null
+
+        open class Auth(initIn: Auth.() -> Unit = {}) {
+            var authorizer: String? = null
+            init {initIn()}
+        }
+
+        init { initIn() }
     }
 
     class S3Event(bucketIn: AWS_S3_Bucket, parent: CloudFormationTemplate) : ServerlessEvent() {
