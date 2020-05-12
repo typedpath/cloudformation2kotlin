@@ -148,7 +148,9 @@ private fun toJsSimpleValue(
                 strValue = strValue.substring(0, strValue.length - 2)
             }
             strValue
-        } else "'${value}'"
+        } else if (value is String && value.startsWith("'"))
+            "\"${value}\""
+        else "'${value}'"
     return printValue
 }
 
