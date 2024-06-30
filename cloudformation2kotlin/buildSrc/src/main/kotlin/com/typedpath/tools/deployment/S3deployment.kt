@@ -34,10 +34,10 @@ fun deploy(
 
     val localRepoDirectory = File(localRepo)
     if (!localRepoDirectory.exists()) {
-        throw RuntimeException("localRepoDirectory doesnt exist: ${localRepoDirectory.absolutePath} ")
+        throw RuntimeException("localRepoDirectory doesnt exist: ${localRepoDirectory.absolutePath} localRepo: ${localRepo} ")
     }
     if (!localRepoDirectory.isDirectory()) {
-        throw RuntimeException("localRepoDirectory isnt a directory : ${localRepoDirectory.absolutePath} ")
+        throw RuntimeException("localRepoDirectory isnt a directory : ${localRepoDirectory.absolutePath}  localRepo: ${localRepo}")
     }
 
     //TODO - deal with windows drives correctly

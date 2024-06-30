@@ -1,0 +1,1 @@
+refactor pipeline example using resource groups

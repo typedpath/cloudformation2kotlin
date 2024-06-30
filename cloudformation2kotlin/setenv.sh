@@ -1,0 +1,1 @@
+export JAVA_HOME=/c/devtools/jdks/Java/jdk1.8.0_221

@@ -3,6 +3,7 @@ package com.typedpath.awscloudformation.serverlessschema
 import com.typedpath.awscloudformation.CloudFormationTemplate
 import com.typedpath.iam2kotlin.IamPolicy
 import com.typedpath.awscloudformation.schema.AWS_S3_Bucket
+import com.typedpath.awscloudformation.schema.AWS_SQS_Queue
 
 //TODO ref sam_resources.py
 // https://github.com/softprops/typed-lambda/tree/master/events
@@ -84,6 +85,15 @@ class AWS_Serverless_Function(  val handler: String,
         val events : MutableList<String> = mutableListOf()
         fun event(strEvent: String) = events.add(strEvent)
     }
+
+    class SQSEvent(queueArn: String, batchSizeIn: Int?,   parent: CloudFormationTemplate) : ServerlessEvent() {
+        override fun getResourceType_() = "SQS"
+        val queue = queueArn
+        val batchSize: Int? = null
+        val events : MutableList<String> = mutableListOf()
+        fun event(strEvent: String) = events.add(strEvent)
+    }
+
 
     val events = HashMap<String, ServerlessEvent>()
 

@@ -11,7 +11,7 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.nio.file.Paths
 
-fun uploadBlobToS3(region: Regions, bucketName: String, keyName: String, inputStream: InputStream, credentialsProvider: AWSCredentialsProvider) : String {
+fun  uploadBlobToS3(region: Regions, bucketName: String, keyName: String, inputStream: InputStream, credentialsProvider: AWSCredentialsProvider) : String {
     val metadata = ObjectMetadata()
     metadata.setContentType("application/blob")
     metadata.addUserMetadata("x-amz-meta-title", keyName)

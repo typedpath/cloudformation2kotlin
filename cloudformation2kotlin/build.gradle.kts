@@ -1,5 +1,8 @@
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.library.SkippedDeclaration.local
+import com.typedpath.tools.deployment.deploy
+
 
 plugins {
     `jsonschema2kotlin`
@@ -11,7 +14,7 @@ plugins {
 }
 
 group = "com.typedpath"
-version = "2.0.1-SNAPSHOT"
+version = "2.0.2-SNAPSHOT"
 
 val ossrhUsername: String by project
 val ossrhPassword: String by project
@@ -42,6 +45,7 @@ repositories {
     /*maven {
         url= uri("https://oss.sonatype.org/content/repositories/snapshots")
     }*/
+
 
 }
 
@@ -159,5 +163,40 @@ tasks.javadoc {
 }
 
 
+tasks.register("s3MavenDeploy") {
+    doLast {
+        println("s3MavenDeploy mm")
+        val s3MavenDeploymentBucketName = "repositorybuckettest65-s3hostingbucket-qpezmj5xooak"
+        val region = "us-east-1"
+       deploy( repositories.mavenLocal().url.path,
+            mavenGroupId,
+            mavenArtifactId,
+            mavenVersion,
+            s3MavenDeploymentBucketName, region)
 
 
+    }
+}
+
+/*
+tasks.s3MavenDeploy {
+    doLast {
+        //find the local maven repo
+        def local
+                repositories.each {
+                    if (it.displayName.startsWith("MavenLocal")) {
+                        local = it
+                    }
+                }
+        //TODO make this an input
+        def s3MavenDeploymentBucketName = "repositorybuckettest65-s3hostingbucket-qpezmj5xooak"
+        def region = "us-east-1"
+
+        S3deploymentKt.deploy(local.url.path,
+            mavenGroupId,
+            mavenArtifactId,
+            mavenVersion,
+            s3MavenDeploymentBucketName, region)
+    }
+}
+*/

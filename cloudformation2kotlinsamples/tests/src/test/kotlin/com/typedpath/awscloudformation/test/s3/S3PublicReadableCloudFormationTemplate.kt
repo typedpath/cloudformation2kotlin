@@ -18,7 +18,7 @@ class S3PublicReadableCloudFormationTemplate(bucketName: String) : CloudFormatio
       indexDocument = "index.html"
       errorDocument = "error.html"
     }
-    this.bucketName = bucketName//
+    this.bucketName = bucketName
   }
 
   val policyDocument = IamPolicy {
