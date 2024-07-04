@@ -16,8 +16,15 @@ class JsonSchema2KotlinPlugin : Plugin<Project> {
 
                 doFirst {
                     transformDirectory("${projectDir}",
-                        listOf("**/us-east1/*.json"),
-                        listOf("**/us-east1/CloudFormationResourceSpecification.json"),
+                        listOf("**/us-east-1/*.json"),
+                        listOf("**/us-east-1/CloudFormationResourceSpecification.json",
+//TODO fix mapping for these: MediaConnectFlowOutputSpecification
+                            "**/us-east-1/MediaConnectFlowSpecification.json",
+                            "**/us-east-1/MediaConnectFlowOutputSpecification.json",
+                            "**/us-east-1/AmplifyUIBuilderComponentSpecification.json",
+                            "**/us-east-1/MediaConnectBridgeSpecification.json",
+                            "**/us-east-1/AppFlowFlowSpecification.json"
+                            ),
                         "${buildDir.absolutePath}/generated/source/kotlin/",
                         "com.typedpath.awscloudformation.schema")
                     println("*******   dooing first ${this.javaClass.simpleName}")

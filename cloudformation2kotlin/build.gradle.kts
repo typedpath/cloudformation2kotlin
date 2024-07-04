@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "com.typedpath"
-version = "2.0.2-SNAPSHOT"
+version = "2.0.3-SNAPSHOT"
 
 val ossrhUsername: String by project
 val ossrhPassword: String by project
@@ -152,9 +152,9 @@ publishing {
 }
 
 
-signing {
-    sign(publishing.publications["mavenJava"])
-}
+//signing {
+//    sign(publishing.publications["mavenJava"])
+//}
 
 tasks.javadoc {
     if (JavaVersion.current().isJava9Compatible) {

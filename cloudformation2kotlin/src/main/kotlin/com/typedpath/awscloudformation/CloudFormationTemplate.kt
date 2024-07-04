@@ -133,6 +133,13 @@ $js""".trimIndent())
     return id
   }
 
+  fun rawInstrinsicFunctionCall(rawCall: String): String {
+    val id = UUID.randomUUID().toString()
+    val f = SingleLineFunctionCall(rawCall)
+    refs.put(id, f)
+    return id
+  }
+
   abstract class Materializeable {
      abstract fun materialise() : Any
   }
